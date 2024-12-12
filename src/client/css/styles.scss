@@ -1,0 +1,228 @@
+.game {
+    display: grid;
+    grid-template-rows: 50px auto 40px;
+    grid-template-areas: "top""output""input";
+    background: black;
+    height: 100vh;
+}
+
+.top-bar {
+    grid-area: top;
+}
+
+.output-area {
+    grid-area: output;
+    font-family: 'Roboto Mono', monospace;
+    padding-left: 4px;
+    padding-right: 4px;
+    overflow-y: scroll;
+    color: white;
+}
+
+.input-area {
+    max-height: 40px;
+    grid-area: input;
+    font-family: 'Roboto Mono', monospace;
+    background: white;
+    color: black;
+    margin: 0;
+
+    .button {
+        margin: 0;
+    }
+}
+
+.generic {
+    color: #eeeeee;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+.chat-global {
+    color: white;
+
+    .identifier {
+        color: #39EC39;
+    }
+}
+
+.chat-private {
+    color: gainsboro;
+}
+
+.timestamp {
+    color: #63aad9;
+    font-weight: normal;
+}
+
+.user-input {
+    color: white;
+    font-weight: bold;
+}
+
+.debug {
+    background-color: #0068A8;
+    color: white;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.room {
+    color: #EEE;
+
+    .name {
+        color: #009400;
+        font-weight: bold;
+    }
+
+    .exits {
+        color: #63aad9;
+    }
+
+    .exit-text {
+        color: #63aad9;
+        font-weight: bold;
+    }
+
+    .description {
+        text-indent: 30px;
+        max-width: 700px;
+        text-align: justify;
+    }
+}
+
+.actors {
+    .actors-text {
+        color: #C200C2;
+    }
+
+    .actor {
+        color: white;
+    }
+}
+
+hr.divider {
+    overflow: visible;
+    /* For IE */
+    padding: 0;
+    border: none;
+    border-top: medium double #DDD;
+    color: #DDD;
+    text-align: center;
+    max-width: initial;
+    margin-top: 0.6rem;
+    margin-bottom: 0.6rem;
+
+    &:after {
+        content: "§";
+        display: inline-block;
+        position: relative;
+        top: -0.95em;
+        font-size: 1em;
+        padding: 0 0.25em;
+        background: black;
+    }
+}
+
+.active-users {
+    ul {
+        list-style-type: none;
+    }
+}
+
+.help {
+
+    .command {
+        .keywords {
+            margin-left: 10px;
+
+            &:before {
+                content: '-';
+                margin-right: 8px;
+            }
+
+            span {
+                color: #56E73F;
+                font-weight: bold;
+            }
+        }
+
+        .helptext {
+            color: #CCC;
+            margin-left: 40px;
+        }
+    }
+}
+
+div.actors ul {
+    list-style-type: none;
+    display: inline-block;
+    margin: 0;
+
+    li {
+        display: inline-block;
+    }
+
+    li:after {
+        content: ',\00a0';
+    }
+
+    li:last-child:after {
+        content: "";
+    }
+}
+
+// .game-icon {
+//     border-radius: 16px;
+//     border: solid 8px white;
+// }
+
+.talk-global {
+    color: #44bb32;
+
+    .identifier {
+        font-weight: bold;
+        color: #56E73F;
+    }
+}
+
+span.rich-text {
+    .b {
+        font-weight: bold;
+    }
+
+    .nb {
+        font-weight: normal;
+    }
+
+    .i {
+        font-style: italic;
+    }
+
+    .ni {
+        font-style: normal;
+    }
+
+    .u {
+        text-decoration: underline;
+    }
+
+    .nu {
+        text-decoration: none;
+    }
+
+    .sm {
+        font-size: 12px;
+    }
+
+    .md {
+        font-size: 16px;
+    }
+
+    .lg {
+        font-size: 36px;
+    }
+}
