@@ -1,44 +1,5 @@
-import Decimal from "decimal.js";
 import { ModelName, Storage } from "../models";
 import { Game } from "../game/game";
-
-export type Descriptor<T> = {
-    typeDescriptor: () => T;
-}
-
-export type Optional = {
-    optional: true;
-}
-
-type ModelReference<T extends ModelName> = {
-    models: readonly T[];
-    typeDescriptor: () => T;
-}
-
-export const Type = {
-    model: <T extends ModelName>(models: T[] | T): ModelReference<T> => {
-        return {
-            models: Array.isArray(models) ? models : [models],
-            typeDescriptor: () => { throw new Error('not implemented') }
-        };
-    },
-    
-    /**
-     * Describes an optional field
-     * @param descriptor 
-     * @returns 
-     */
-    optional: <T>(descriptor: Descriptor<T>): Descriptor<T> & Optional => {
-        return { 
-            ...descriptor,
-            optional: true
-        };
-    },
-
-    of: <T>(): Descriptor<T> => {
-        return { typeDescriptor: () => { throw new Error('not implemented') } };
-    }
-}
 
 /**
  * Infers Model Storage types if specified.

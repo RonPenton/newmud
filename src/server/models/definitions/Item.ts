@@ -1,16 +1,20 @@
-import { InferModel, registerModel } from "../types";
+import { RTTI } from "../../rtti";
+import { registerModelName } from "../ModelNames";
+import { registerModel } from "../Models";
 
-const registration = registerModel<{
-    id: number;
-    name: string;
-    roomId?: number;
-    actorId?: number;
-}>()({
-    name: 'item',
+const name = registerModelName('item');
+
+const registration = registerModel({
+    name,
     plural: 'items',
-    invariant: () => true
+    descriptor: {
+        id: RTTI.of<number>(),
+        name: RTTI.of<string>(),
+        room: RTTI.optional(RTTI.modelPointer('room')),
+        actor: RTTI.optional(RTTI.modelPointer('actor')),
+    },
+    isDatabaseModel: true,
 });
 
-declare module "../Models" {
-    interface Models extends InferModel<typeof registration> { }
-}
+declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }
+declare module "../Models" { interface Models extends InferModel<typeof registration> { } }
