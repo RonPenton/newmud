@@ -1,7 +1,13 @@
-export interface ModelNames {};
+export interface ModelNames { };
 
-export type InferModelName<T extends string> = {
-    [K in T]: K;
+export type ModelNameRegistration<N extends string, P extends string, DB extends boolean> = {
+    name: N;
+    plural: P;
+    isDatabaseModel: DB;
+}
+
+export type InferModelName<T extends ModelNameRegistration<any, any, any>> = {
+    [K in T['name']]: T;
 }
 
 /**
@@ -9,9 +15,29 @@ export type InferModelName<T extends string> = {
  */
 export type ModelName = keyof ModelNames;
 
-export const modelNames: ModelName[] = [];
+export type DbModelName = keyof {
+    [K in ModelName as ModelNames[K] extends IsDatabaseModel ? K : never]: K;
+};
 
-export function registerModelName<T extends string>(name: T): T {
-    modelNames.push(name as any);
-    return name;
+type IsDatabaseModel = {
+    isDatabaseModel: true;
+}
+
+export const modelNames: ModelName[] = [];
+export const dbModelNames: DbModelName[] = [];
+export const nonDbModelNames: Exclude<ModelName, DbModelName>[] = [];
+
+export function registerModelName<
+    N extends string,
+    P extends string,
+    DB extends boolean
+>(registration: ModelNameRegistration<N, P, DB>): ModelNameRegistration<N, P, DB> {
+    modelNames.push(registration.name as any);
+    if(registration.isDatabaseModel) {
+        dbModelNames.push(registration.name as any);
+    } else {
+        nonDbModelNames.push(registration.name as any);
+    }
+
+    return registration;
 }

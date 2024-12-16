@@ -2,18 +2,20 @@ import { RTTI } from "../../rtti";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
 
-const name = registerModelName('item');
+const name = registerModelName({
+    name: 'item',
+    plural: 'items',
+    isDatabaseModel: true,
+});
 
 const registration = registerModel({
-    name,
-    plural: 'items',
+    ...name,
     descriptor: {
-        id: RTTI.of<number>(),
+        id: RTTI.id(),
         name: RTTI.of<string>(),
         room: RTTI.optional(RTTI.modelPointer('room')),
         actor: RTTI.optional(RTTI.modelPointer('actor')),
-    },
-    isDatabaseModel: true,
+    }
 });
 
 declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }

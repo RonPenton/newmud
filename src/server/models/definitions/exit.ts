@@ -2,13 +2,11 @@ import { RTTI } from "../../rtti";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
 
-const name = registerModelName(
-    {
-        name: 'room',
-        plural: 'rooms',
-        isDatabaseModel: true,
-    }
-);
+const name = registerModelName({
+    name: 'exit',
+    plural: 'exits',
+    isDatabaseModel: false,
+});
 
 const registration = registerModel({
     ...name,

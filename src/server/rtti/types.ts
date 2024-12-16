@@ -8,6 +8,10 @@ export type Optional = {
     isOptional: true;
 }
 
+export type ReadOnly = {
+    isReadOnly: true;
+}
+
 export type ModelPointer<T extends ModelName> = {
     modelPointerName: T;
     typeDescriptor: () => T;
