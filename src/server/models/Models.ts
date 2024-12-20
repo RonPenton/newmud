@@ -1,20 +1,15 @@
-import { TypeDescriptor } from "../rtti/types";
-import { ModelName } from "./ModelNames";
+import { ObjectDescriptor } from "../rtti/types";
+import { ModelName, ModelNameRegistration } from "./ModelNames";
 
 export interface Models {}
 
-export type ModelDescriptor = Record<string, TypeDescriptor<any>>;
-
 export type ModelRegistration<
-    T extends ModelDescriptor,
+    T extends ObjectDescriptor,
     N extends string,
     P extends string,
     DB extends boolean
-> = {
-    name: N;
-    plural: P;
+> = ModelNameRegistration<N, P, DB> & {
     descriptor: T;
-    isDatabaseModel: DB;
 }
 
 // Helper type to infer the models dynamically
@@ -31,7 +26,7 @@ export const dbModelNames: ModelName[] = [];
 export const modelRegistrations: Record<ModelName, ModelRegistration<any, string, string, boolean>> = {} as any;
 
 export function registerModel<
-    T extends ModelDescriptor,
+    T extends ObjectDescriptor,
     N extends string,
     P extends string,
     DB extends boolean
