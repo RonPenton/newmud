@@ -1,10 +1,8 @@
+import Decimal from "decimal.js";
 import { DescriptorType, WithoutDescriptor } from "../models";
 import { ModelName } from "../models/ModelNames";
-import { ModelPointer, Nullable, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from "./types";
+import { IsDecimal, IsObject, ModelPointer, Nullable, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from "./types";
 
-export type IsObject = {
-    object: ObjectDescriptor;
-}
 
 export const RTTI = {
     id: (): TypeDescriptor<number> & ReadOnly => {
@@ -73,5 +71,12 @@ export const RTTI = {
             object,
             typeDescriptor: () => { throw new Error('not implemented') },
         }
+    },
+
+    decimal: (): TypeDescriptor<Decimal> & IsDecimal => {
+        return {
+            typeDescriptor: () => { throw new Error('not implemented') },
+            isDecimal: true,
+        };
     }
 }

@@ -1,7 +1,7 @@
-import { ObjectDescriptor } from "../rtti/types";
+import { DbObjectDescriptor, ObjectDescriptor } from "../rtti/types";
 import { ModelName, ModelNameRegistration } from "./ModelNames";
 
-export interface Models {}
+export interface Models { }
 
 export type ModelRegistration<
     T extends ObjectDescriptor,
@@ -25,18 +25,13 @@ export const dbModelNames: ModelName[] = [];
 
 export const modelRegistrations: Record<ModelName, ModelRegistration<any, string, string, boolean>> = {} as any;
 
-export function registerModel<
-    T extends ObjectDescriptor,
-    N extends string,
-    P extends string,
-    DB extends boolean
->(
-    registration: ModelRegistration<T, N, P, DB>
-): ModelRegistration<T, N, P, DB> {
+export function registerModel<T extends DbObjectDescriptor, N extends string, P extends string>(registration: ModelRegistration<T, N, P, true>): ModelRegistration<T, N, P, true>;
+export function registerModel<T extends ObjectDescriptor, N extends string, P extends string>(registration: ModelRegistration<T, N, P, false>): ModelRegistration<T, N, P, false>;
+export function registerModel(registration: ModelRegistration<any, string, string, boolean>): ModelRegistration<any, string, string, boolean> {
     modelRegistrations[registration.name as ModelName] = registration;
     allModelNames.push(registration.name as ModelName);
     if (registration.isDatabaseModel) {
         dbModelNames.push(registration.name as ModelName);
     }
     return registration;
-}
+};
