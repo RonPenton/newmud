@@ -1,4 +1,4 @@
-import { DescriptorType } from "../models";
+import { DescriptorType, WithoutDescriptor } from "../models";
 import { ModelName } from "../models/ModelNames";
 import { ModelPointer, Nullable, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from "./types";
 
@@ -35,7 +35,9 @@ export const RTTI = {
         };
     },
 
-    nullable: <T extends TypeDescriptor<any>>(descriptor: T): TypeDescriptor<DescriptorType<T> | null> & Nullable => {
+    nullable: <T extends TypeDescriptor<any>>(
+        descriptor: T
+    ): WithoutDescriptor<T> & TypeDescriptor<DescriptorType<T> | null> & Nullable => {
         return {
             ...descriptor,
             typeDescriptor: () => { throw new Error('not implemented') },
@@ -53,10 +55,10 @@ export const RTTI = {
     recordOfModel: <K extends string, T extends ModelName>(
         recordKeys: readonly K[],
         modelName: T
-    ): TypeDescriptor<Record<K, ModelPointer<T>>> & IsObject => {
+    ): TypeDescriptor<Record<K, ModelPointer<T> & Optional>> & IsObject => {
 
         const object = recordKeys.reduce((acc, key) => {
-            acc[key] = RTTI.modelPointer(modelName);
+            acc[key] =RTTI.optional(RTTI.modelPointer(modelName));
             return acc;
         }, {} as Record<K, ModelPointer<T>>);
 

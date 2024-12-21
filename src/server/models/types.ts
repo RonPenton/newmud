@@ -34,9 +34,9 @@ export type InferStorageLeaf<T> =
 
 export type InferStorageDescriptor<T> =
     T extends TypeDescriptor<infer U> & IsObject
-    ? U extends ObjectDescriptor 
-        ? InferStorageObject<U> 
-        : never
+    ? Exclude<U, null> extends ObjectDescriptor
+    ? InferStorageObject<Exclude<U, null>> | Extract<U, null>
+    : never
     : InferStorageLeaf<T>;
 
 export type InferStorageObject<T extends ObjectDescriptor> =
@@ -55,7 +55,9 @@ export type InferProxyLeaf<T> =
 
 export type InferProxyDescriptor<T> =
     T extends TypeDescriptor<infer U> & IsObject
-    ? { [K in keyof U]: InferProxyDescriptor<U[K]>; }
+    ? Exclude<U, null> extends ObjectDescriptor
+    ? InferProxyObject<Exclude<U, null>> | Extract<U, null>
+    : never
     : InferProxyLeaf<T>;
 
 export type InferProxyObject<T extends ObjectDescriptor> =
@@ -88,15 +90,35 @@ type flatten<T> = identity<{
     [k in keyof T]: T[k];
 }>;
 
-
+export type WithoutDescriptor<T extends TypeDescriptor<any>> = Omit<T, 'typeDescriptor'>;
 
 export type Storage<T extends ModelName> = InferStorageObject<D<T>>;
 export type ModelProxy<T extends ModelName> = InferProxyObject<D<T>>;
 
 export type ModelPlural<T extends ModelName> = Models[T]['plural'];
 
+type P = ModelPlural<keyof {
+    [K in keyof D<'actor'> as D<'actor'>[K] extends ModelPointer<'room'> ? 'actor' : never]: K;
+}>;
+
+type PointsTo<T extends ModelName, U extends ModelName> = keyof {
+    [K in keyof D<T> as D<T>[K] extends ModelPointer<U> ? T : never]: T;
+}
+
+type EveryPointsTo<T extends ModelName> = keyof {
+    [K in ModelName as PointsTo<K, T> extends never ? never : K]: K;
+}
+
+type AddSets<T extends ModelName> = {
+    [K in EveryPointsTo<T> as ModelPlural<K>]: Storage<K>[]; 
+}
+
+type L = EveryPointsTo<'room'>;
+
+type M = AddSets<'room'>;
+
+type O = PointsTo<'actor', 'room'>;
+
 type A = ModelProxy<'actor'>;
 
 type B = Storage<'actor'>;
-
-type C = D<'actor'>;

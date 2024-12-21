@@ -13,6 +13,7 @@ const registration = registerModel({
     descriptor: {
         id: RTTI.id(),
         name: RTTI.of<string>(),
+        portal: RTTI.modelPointer('portal'),
     }
 });
 

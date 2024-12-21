@@ -13,16 +13,9 @@ const registration = registerModel({
     ...name,
     descriptor: {
         id: RTTI.id(),
-        name: RTTI.nullable(RTTI.of<string>()),
+        name: RTTI.of<string>(),
         room: RTTI.modelPointer('room'),
-        blep: RTTI.nullable(RTTI.object({
-            tep: RTTI.of<number>(),
-            // bop: RTTI.object({
-            //     nop: RTTI.of<string>(),
-            //     dop: RTTI.optional(RTTI.modelPointer('room')),
-            // })
-        })),
-        // exits: RTTI.recordOfModel(Directions, 'room'),
+        exits: RTTI.recordOfModel(Directions, 'room'),
     }
 });
 
