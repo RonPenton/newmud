@@ -14,6 +14,13 @@ export const RTTI = {
         };
     },
 
+    readonly: <T extends TypeDescriptor<any>>(descriptor: T): T & ReadOnly => {
+        return {
+            ...descriptor,
+            isReadOnly: true,
+        };
+    },
+
     of: <T>(): TypeDescriptor<T> => {
         return {
             typeDescriptor: () => { throw new Error('not implemented') },

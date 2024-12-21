@@ -1,6 +1,6 @@
 import { IsObject } from '../rtti';
-import { ModelPointer, Nullable, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from '../rtti/types';
-import { ModelName } from './ModelNames';
+import { ModelPointer, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from '../rtti/types';
+import { DbModelName, ModelName } from './ModelNames';
 import { Models } from './Models';
 
 type D<T extends ModelName> = Models[T]['descriptor'];
@@ -92,33 +92,20 @@ type flatten<T> = identity<{
 
 export type WithoutDescriptor<T extends TypeDescriptor<any>> = Omit<T, 'typeDescriptor'>;
 
-export type Storage<T extends ModelName> = InferStorageObject<D<T>>;
-export type ModelProxy<T extends ModelName> = InferProxyObject<D<T>>;
-
-export type ModelPlural<T extends ModelName> = Models[T]['plural'];
-
-type P = ModelPlural<keyof {
-    [K in keyof D<'actor'> as D<'actor'>[K] extends ModelPointer<'room'> ? 'actor' : never]: K;
-}>;
-
-type PointsTo<T extends ModelName, U extends ModelName> = keyof {
+type PointsTo<T extends DbModelName, U extends DbModelName> = keyof {
     [K in keyof D<T> as D<T>[K] extends ModelPointer<U> ? T : never]: T;
 }
 
-type EveryPointsTo<T extends ModelName> = keyof {
-    [K in ModelName as PointsTo<K, T> extends never ? never : K]: K;
+type EveryPointsTo<T extends DbModelName> = keyof {
+    [K in DbModelName as PointsTo<K, T> extends never ? never : K]: K;
 }
 
-type AddSets<T extends ModelName> = {
-    [K in EveryPointsTo<T> as ModelPlural<K>]: Storage<K>[]; 
-}
+export type AddSets<T extends ModelName> = T extends DbModelName ? {
+    [K in EveryPointsTo<T> as ModelPlural<K>]: Storage<K>[];
+} : {};
 
-type L = EveryPointsTo<'room'>;
+export type Storage<T extends ModelName> = InferStorageObject<D<T>>;
+export type ModelProxy<T extends ModelName> =
+    InferProxyObject<D<T>> & AddSets<T>;
 
-type M = AddSets<'room'>;
-
-type O = PointsTo<'actor', 'room'>;
-
-type A = ModelProxy<'actor'>;
-
-type B = Storage<'actor'>;
+export type ModelPlural<T extends ModelName> = Models[T]['plural'];

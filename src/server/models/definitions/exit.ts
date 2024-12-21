@@ -11,9 +11,8 @@ const name = registerModelName({
 const registration = registerModel({
     ...name,
     descriptor: {
-        id: RTTI.id(),
-        name: RTTI.of<string>(),
-        portal: RTTI.modelPointer('portal'),
+        room: RTTI.optional(RTTI.modelPointer('room')),
+        portal: RTTI.readonly(RTTI.optional(RTTI.modelPointer('portal'))),
     }
 });
 

@@ -1,5 +1,4 @@
 import { RTTI } from "../../rtti";
-import { Directions } from "../../utils/direction";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
 
@@ -15,7 +14,6 @@ const registration = registerModel({
         id: RTTI.id(),
         name: RTTI.of<string>(),
         room: RTTI.modelPointer('room'),
-        exits: RTTI.recordOfModel(Directions, 'room'),
     }
 });
 
