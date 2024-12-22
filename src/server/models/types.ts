@@ -1,5 +1,4 @@
-import { IsObject } from '../rtti';
-import { ModelPointer, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from '../rtti/types';
+import { IsObject, ModelPointer, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from '../rtti/types';
 import { DbModelName, ModelName } from './ModelNames';
 import { Models } from './Models';
 

@@ -1,7 +1,14 @@
-import Decimal from "decimal.js";
 import { DescriptorType, WithoutDescriptor } from "../models";
 import { ModelName } from "../models/ModelNames";
-import { IsDecimal, IsObject, ModelPointer, Nullable, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from "./types";
+import {
+    IsObject,
+    ModelPointer,
+    Nullable,
+    ObjectDescriptor,
+    Optional,
+    ReadOnly,
+    TypeDescriptor
+} from "./types";
 
 
 export const RTTI = {
@@ -63,7 +70,7 @@ export const RTTI = {
     ): TypeDescriptor<Record<K, ModelPointer<T> & Optional>> & IsObject => {
 
         const object = recordKeys.reduce((acc, key) => {
-            acc[key] =RTTI.optional(RTTI.modelPointer(modelName));
+            acc[key] = RTTI.optional(RTTI.modelPointer(modelName));
             return acc;
         }, {} as Record<K, ModelPointer<T>>);
 
@@ -73,10 +80,10 @@ export const RTTI = {
         }
     },
 
-    decimal: (): TypeDescriptor<Decimal> & IsDecimal => {
+    default: <T extends TypeDescriptor<any>>(descriptor: T, defaultValue: DescriptorType<T>): T => {
         return {
-            typeDescriptor: () => { throw new Error('not implemented') },
-            isDecimal: true,
+            ...descriptor,
+            defaultValue,
         };
     }
 }

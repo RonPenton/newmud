@@ -2,7 +2,12 @@ import { ModelName } from "../models/ModelNames";
 
 export type TypeDescriptor<T> = {
     typeDescriptor: () => T;
+    defaultValue?: T;
 }
+
+export type FullTypeDescriptor<T> = TypeDescriptor<T> & Partial<
+    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject
+>;
 
 export type ObjectDescriptor = Record<string, TypeDescriptor<any>>;
 
@@ -30,8 +35,4 @@ export type ModelPointer<T extends ModelName> = {
 
 export type IsObject = {
     object: ObjectDescriptor;
-}
-
-export type IsDecimal = {
-    isDecimal: true;
 }
