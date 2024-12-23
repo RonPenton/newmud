@@ -1,12 +1,11 @@
 export interface ModelNames { };
 
-export type ModelNameRegistration<N extends string, P extends string, DB extends boolean> = {
+export type ModelNameRegistration<N extends string, P extends string> = {
     name: N;
     plural: P;
-    isDatabaseModel: DB;
 }
 
-export type InferModelName<T extends ModelNameRegistration<any, any, any>> = {
+export type InferModelName<T extends ModelNameRegistration<any, any>> = {
     [K in T['name']]: T;
 }
 
@@ -15,29 +14,24 @@ export type InferModelName<T extends ModelNameRegistration<any, any, any>> = {
  */
 export type ModelName = keyof ModelNames;
 
-export type DbModelName = keyof {
-    [K in ModelName as ModelNames[K] extends IsDatabaseModel ? K : never]: K;
-};
-
-type IsDatabaseModel = {
-    isDatabaseModel: true;
-}
-
+export const modelRegistrations: Record<ModelName, ModelNameRegistration<string, string>> = {} as any;
 export const modelNames: ModelName[] = [];
-export const dbModelNames: DbModelName[] = [];
-export const nonDbModelNames: Exclude<ModelName, DbModelName>[] = [];
 
 export function registerModelName<
     N extends string,
-    P extends string,
-    DB extends boolean
->(registration: ModelNameRegistration<N, P, DB>): ModelNameRegistration<N, P, DB> {
+    P extends string
+>(registration: ModelNameRegistration<N, P>): ModelNameRegistration<N, P> {
+    modelRegistrations[registration.name as ModelName] = registration;
     modelNames.push(registration.name as any);
-    if(registration.isDatabaseModel) {
-        dbModelNames.push(registration.name as any);
-    } else {
-        nonDbModelNames.push(registration.name as any);
-    }
-
     return registration;
+}
+
+export type PluralName = ModelNames[keyof ModelNames]['plural'];
+
+export function pluralName<N extends ModelName>(name: N): PluralName {
+    return modelRegistrations[name].plural as any;
+}
+
+export function singularName<P extends PluralName>(name: P): ModelName {
+    return modelNames.find(x => modelRegistrations[x].plural === name) as any;
 }

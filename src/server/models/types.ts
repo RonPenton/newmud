@@ -1,5 +1,5 @@
 import { IsObject, ModelPointer, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from '../rtti/types';
-import { DbModelName, ModelName } from './ModelNames';
+import { ModelName } from './ModelNames';
 import { Models } from './Models';
 
 type D<T extends ModelName> = Models[T]['descriptor'];
@@ -91,20 +91,25 @@ type flatten<T> = identity<{
 
 export type WithoutDescriptor<T extends TypeDescriptor<any>> = Omit<T, 'typeDescriptor'>;
 
-type PointsTo<T extends DbModelName, U extends DbModelName> = keyof {
+type PointsTo<T extends ModelName, U extends ModelName> = keyof {
     [K in keyof D<T> as D<T>[K] extends ModelPointer<U> ? T : never]: T;
 }
 
-type EveryPointsTo<T extends DbModelName> = keyof {
-    [K in DbModelName as PointsTo<K, T> extends never ? never : K]: K;
+type EveryPointsTo<T extends ModelName> = keyof {
+    [K in ModelName as PointsTo<K, T> extends never ? never : K]: K;
 }
 
-export type AddSets<T extends ModelName> = T extends DbModelName ? {
+export type AddSets<T extends ModelName> = T extends ModelName ? {
     [K in EveryPointsTo<T> as ModelPlural<K>]: Storage<K>[];
 } : {};
 
-export type Storage<T extends ModelName> = InferStorageObject<D<T>>;
-export type ModelProxy<T extends ModelName> =
-    InferProxyObject<D<T>> & AddSets<T>;
+export type DbObject = {
+    readonly id: number;
+    name: string;
+}
+
+export type Storage<T extends ModelName> = InferStorageObject<D<T>> & DbObject;
+
+export type ModelProxy<T extends ModelName> = InferProxyObject<D<T>> & AddSets<T> & DbObject;
 
 export type ModelPlural<T extends ModelName> = Models[T]['plural'];

@@ -1,9 +1,9 @@
 import { Db } from ".";
-import { Models } from "../models";
+import { modelNames } from "../models/ModelNames";
 import { dbCreateObjectTable } from "./generic";
 
 export async function createSchema(db: Db) {
-    for (const model of Models) {
+    for (const model of modelNames) {
         await dbCreateObjectTable(db, model);
     }
 }

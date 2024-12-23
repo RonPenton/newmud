@@ -1,10 +1,9 @@
 import { Db } from ".";
 import { dbGetObjects } from "./generic";
-import { DbModelName } from "../models/ModelNames";
+import { ModelName } from "../models/ModelNames";
 import { Storage } from "../models";
-import Decimal from "decimal.js";
 
-export async function pagedLoad<T extends DbModelName>(db: Db, table: T): Promise<Storage<T>[]> {
+export async function pagedLoad<T extends ModelName>(db: Db, table: T): Promise<Storage<T>[]> {
     const arr: Storage<T>[] = [];
 
     let page = 0;
@@ -26,12 +25,3 @@ export async function pagedLoad<T extends DbModelName>(db: Db, table: T): Promis
 //     serializeDecimals(storage);
 //     await dbUpdateObject(db, table, storage);
 // }
-
-
-let x = {
-    decimal: new Decimal('100000000000000000000000000')
-};
-
-let y = JSON.stringify(x);
-
-console.log(y);

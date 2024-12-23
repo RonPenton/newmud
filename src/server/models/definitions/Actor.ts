@@ -4,8 +4,7 @@ import { registerModel } from "../Models";
 
 const name = registerModelName({
     name: 'actor',
-    plural: 'actors',
-    isDatabaseModel: true,
+    plural: 'actors'
 });
 
 const registration = registerModel({

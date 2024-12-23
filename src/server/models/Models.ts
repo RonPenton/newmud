@@ -7,13 +7,12 @@ export type ModelRegistration<
     T extends ObjectDescriptor,
     N extends string,
     P extends string,
-    DB extends boolean
-> = ModelNameRegistration<N, P, DB> & {
+> = ModelNameRegistration<N, P> & {
     descriptor: T;
 }
 
 // Helper type to infer the models dynamically
-export type InferModel<T extends ModelRegistration<any, any, any, any>> = {
+export type InferModel<T extends ModelRegistration<any, any, any>> = {
     [K in T['name']]: T;
 };
 
@@ -21,17 +20,17 @@ export type InferModel<T extends ModelRegistration<any, any, any, any>> = {
  * An array of all model names in the game.
  */
 export const allModelNames: ModelName[] = [];
-export const dbModelNames: ModelName[] = [];
 
-export const modelRegistrations: Record<ModelName, ModelRegistration<any, string, string, boolean>> = {} as any;
+export const modelRegistrations: Record<ModelName, ModelRegistration<any, string, string>> = {} as any;
 
-export function registerModel<T extends DbObjectDescriptor, N extends string, P extends string>(registration: ModelRegistration<T, N, P, true>): ModelRegistration<T, N, P, true>;
-export function registerModel<T extends ObjectDescriptor, N extends string, P extends string>(registration: ModelRegistration<T, N, P, false>): ModelRegistration<T, N, P, false>;
-export function registerModel(registration: ModelRegistration<any, string, string, boolean>): ModelRegistration<any, string, string, boolean> {
+export function registerModel<
+    T extends DbObjectDescriptor,
+    N extends string,
+    P extends string
+>(
+    registration: ModelRegistration<T, N, P>
+): ModelRegistration<T, N, P> {
     modelRegistrations[registration.name as ModelName] = registration;
     allModelNames.push(registration.name as ModelName);
-    if (registration.isDatabaseModel) {
-        dbModelNames.push(registration.name as ModelName);
-    }
     return registration;
 };

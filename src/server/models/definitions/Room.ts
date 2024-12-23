@@ -1,5 +1,5 @@
 import { RTTI } from "../../rtti";
-import { Directions } from "../../utils/direction";
+// import { Directions } from "../../utils/direction";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
 
@@ -7,7 +7,6 @@ const name = registerModelName(
     {
         name: 'room',
         plural: 'rooms',
-        isDatabaseModel: true,
     }
 );
 
@@ -16,7 +15,7 @@ const registration = registerModel({
     descriptor: {
         id: RTTI.id(),
         name: RTTI.of<string>(),
-        exits: RTTI.recordOfModel(Directions, 'exit'),
+        // exits: RTTI.recordOfModel(Directions, 'exit'),
     }
 });
 

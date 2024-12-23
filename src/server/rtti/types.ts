@@ -16,6 +16,7 @@ export type DbObjectDescriptor = {
     name: TypeDescriptor<string>;
 } & Omit<ObjectDescriptor, 'id' | 'name'>;
 
+
 export type Optional = {
     isOptional: true;
 }
