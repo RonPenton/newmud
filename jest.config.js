@@ -27,7 +27,7 @@ module.exports = {
         '/test_data/',
         '/config/'
     ],
-    testRegex: '(/test/.*)\\.(j|t)s[x]?$',
+    testRegex: '(/test/.*)\\.test.ts[x]?$',
     transformIgnorePatterns: [
         'node_modules/(?!@hedtech)'
     ]

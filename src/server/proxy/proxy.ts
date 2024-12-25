@@ -10,7 +10,8 @@ import {
     ObjectDescriptor
 } from '../rtti/types';
 import { recordFilter, recordMap } from 'tsc-utils';
-import { DbSet, InternalAdd } from '../db/dbset';
+import { DbSet, InternalAdd, InternalDelete } from '../db/dbset';
+import Decimal from 'decimal.js';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -26,10 +27,8 @@ export function getProxyObject<T extends ModelName>(
         return Object.values(def).some(val => isModelPointer(val) && val.modelPointerName === type);
     }));
 
-    // console.log(`records linking to ${type}: ${recordsLinkingToThis}`);
-
     const dbSets = recordsLinkingToThis.reduce((acc, name) => {
-        acc[pluralName(name as ModelName)] = new DbSet(name as ModelName, universe.proxies);
+        acc[pluralName(name as ModelName)] = new DbSet(name as ModelName, type, obj, universe.proxies);
         return acc;
     }, {} as Record<PluralName, DbSet<any>>);
 
@@ -44,6 +43,7 @@ export function getProxyObject<T extends ModelName>(
         const modelLinks = recordFilter(typeDef, (def) => isModelPointer(def));
 
         for (const [key, def] of Object.entries(modelLinks)) {
+            console.log(`Attempting to link ${type}[${obj.id}] to ${key}[${obj[key as keyof typeof obj]}]`);
 
             // the linked type has a dbset of links back to this object.
             // for example an "actor" has a dbset of "items", and we'll add this item's ID 
@@ -59,12 +59,14 @@ export function getProxyObject<T extends ModelName>(
             }
 
             if (typeof linkedId !== 'number') {
-                throw new Error(`Invalid linked ID for ${type}[${obj.id}].${key}`);
+                throw new Error(`Invalid linked ID for ${type}[${obj.id}].${key}: ${linkedId}`);
             }
             const linkedObj = universe.getRecord(linkedType, linkedId);
             if (linkedObj === undefined) {
                 throw new Error(`Could not find linked object ${linkedType}[${linkedId}]`);
             }
+
+            console.log(`Linking ${type}[${obj.id}] to ${linkedType}[${linkedId}]`);
             let set = linkedObj[pluralName(type)];
             if (!(set instanceof DbSet)) {
                 console.log(linkedObj);
@@ -75,6 +77,28 @@ export function getProxyObject<T extends ModelName>(
             }
         }
     });
+
+    function getCorrespondingDbSet(
+        modelPointerName: ModelName,
+        id: number | undefined | null | { id: number }
+    ) {
+        if (id === null || id === undefined) {
+            return null;
+        }
+
+        const val = typeof id === 'number' ? id : id.id;
+
+        const record = universe.getRecord(modelPointerName, val);
+        if (!record) {
+            throw new Error(`Could not find ${modelPointerName}[${id}]`);
+        }
+        const setName = pluralName(type);
+        const set = record[setName as keyof typeof record] as unknown as DbSet<any>;
+        if (!(set instanceof DbSet)) {
+            throw new Error(`Invalid DbSet for ${modelPointerName}[${id}].${setName}`);
+        }
+        return set;
+    }
 
     return new DeepProxy<ModelProxy<T>>(obj as any, {
         set(target, key, value, receiver) {
@@ -99,12 +123,38 @@ export function getProxyObject<T extends ModelName>(
                 throw new Error(`Cannot set property ${pathStr} to a non-object`);
             }
 
-            // if (value instanceof Decimal) {
-            //     Reflect.set(target, key, value, receiver);
-            //     universe.changesets[type].add(obj.id);
-            //     return value;
-            // }
-            if (typeof value === 'object' && value !== null) {
+            if (def.modelPointerName !== undefined) {
+
+                const existingVal = Reflect.get(target, key, receiver) as number | null | undefined;
+                const existingSet = getCorrespondingDbSet(def.modelPointerName, existingVal);
+                const newSet = getCorrespondingDbSet(def.modelPointerName, value);
+
+                if (existingSet !== null && !!existingVal) {
+                    existingSet[InternalDelete](obj.id);
+                }
+
+                if (value === null) {
+                    Reflect.set(target, key, value, receiver);
+                }
+                else {
+                    if (newSet === null) {
+                        throw new Error(`Could not find ${def.modelPointerName}[${value}]`);
+                    }
+
+                    Reflect.set(target, key, value.id, receiver);
+                    console.log(`Adding ${value.id} to set ${newSet}`);
+                    newSet[InternalAdd](obj.id);
+                }
+                universe.setDirty(type, obj.id);
+                return true;
+            }
+
+            if (value instanceof Decimal) {
+                Reflect.set(target, key, value, receiver);
+                universe.setDirty(type, obj.id);
+                return true;
+            }
+            else if (typeof value === 'object' && value !== null) {
                 Reflect.set(target, key, value, receiver);
                 universe.setDirty(type, obj.id);
                 return this.nest({}) as any;
@@ -129,6 +179,7 @@ export function getProxyObject<T extends ModelName>(
             }
 
             delete target[key as keyof typeof target];
+            universe.setDirty(type, obj.id);
             return true;
         },
 
@@ -137,17 +188,24 @@ export function getProxyObject<T extends ModelName>(
 
             const def = getTypedef(typeDef, path);
             if (!def && dbSets[key as PluralName]) {
+                //console.log(`Getting dbset ${String(key)}`);
                 return dbSets[key as PluralName];
             }
 
-            //console.log(`path: ${path}`);
-
             const val: any = Reflect.get(target, key, receiver);
 
-            if (typeof val === 'object' && val !== null) {
+            if (def && def.modelPointerName !== undefined) {
+                return universe.proxies[def.modelPointerName as ModelName].get(val);
+            }
+
+            if (val instanceof Decimal) {
+                // decimals are "objects" but not records, so it would be an error to try to
+                // nest them.
+                return val;
+            }
+            else if (typeof val === 'object' && val !== null) {
                 return this.nest(val);
             } else {
-                console.log(`getting ${type}[${obj.id}].${path.join('.')} = ${val}`);
                 return val;
             }
         }
@@ -171,9 +229,6 @@ function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescri
     return obj;
 }
 
-// function getModelsLinkingTo
-
-
 async function go() {
 
     await loadModelFiles();
@@ -194,27 +249,29 @@ async function go() {
                 }
             }
         },
-    {
-        id: 2,
-        name: 'actor 2',
-        room: 1,
-        obj: {
-            x: 1,
-            y: 2,
-            z: 3,
-            sub: {
-                a: 4,
-                b: 5,
-                c: 6
+        {
+            id: 2,
+            name: 'actor 2',
+            room: 1,
+            obj: {
+                x: 1,
+                y: 2,
+                z: 3,
+                sub: {
+                    a: 4,
+                    b: 5,
+                    c: 6
+                }
             }
-        }
 
-    }],
+        }],
         item: [
             {
                 id: 1,
                 name: 'test item',
-                actor: 1
+                actor: 1,
+                room: null,
+                cost: new Decimal(10)
             }
         ],
         room: [{
@@ -235,17 +292,23 @@ async function go() {
         x.items.forEach(item => { console.log(item.name); });
     }
 
+    console.log(um.getDirtyObjects());
     const item = um.getRecord('item', 1);
     const actor2 = um.getRecord('actor', 2);
     if (item && actor2) {
+        console.log(um.getDirtyObjects());
         console.log(`item name: ${item.name}`);
+        console.log(`item cost: ᚱ${item.cost}`);
         console.log(`item owner name: ${item.actor?.name}`);
 
-        item.actor = actor2;
+        //item.actor = actor2;
+        item.cost = new Decimal(20);
         console.log(`item owner name: ${item.actor?.name}`);
+        console.log(`item cost: ᚱ${item.cost}`);
+        console.log(um.getDirtyObjects());
     }
 
 
 }
 
-void go();
+//void go();

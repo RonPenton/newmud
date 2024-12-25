@@ -112,7 +112,7 @@ type EveryPointsTo<T extends ModelName> = keyof {
 }
 
 export type AddSets<T extends ModelName> = T extends ModelName ? {
-    [K in EveryPointsTo<T> as ModelPlural<K>]: DbSet<K>;
+    readonly [K in EveryPointsTo<T> as ModelPlural<K>]: DbSet<K>;
 } : {};
 
 export type DbObject = {

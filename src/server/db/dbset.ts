@@ -1,6 +1,6 @@
 import { filterIterable, mapIterable } from "tsc-utils";
 import { ModelName, pluralName } from "../models/ModelNames";
-import { ModelProxy } from "../models";
+import { ModelProxy, Storage } from "../models";
 import { UniverseProxies } from "../universe/universe";
 
 export const InternalAdd = Symbol();
@@ -10,7 +10,12 @@ export const InternalClear = Symbol();
 export class DbSet<T extends ModelName> {
     private _set = new Set<number>();
 
-    constructor(private readonly table: T, private proxies: UniverseProxies) { }
+    constructor(
+        private readonly table: T,
+        private objType: ModelName,
+        private obj: Storage<ModelName>,
+        private proxies: UniverseProxies
+    ) { }
 
     private getChecked(id: number) {
         console.log(`getting ${this.table}[${id}]`);
@@ -27,14 +32,24 @@ export class DbSet<T extends ModelName> {
      * Appends a new element with a specified value to the end of the Set.
      */
     public [InternalAdd](value: ModelProxy<T> | number): this {
+        //console.log(this._set);
         if (typeof value === 'number') {
+            console.log(`${this} adding ${this.table}[${value}] {number}`);
             this._set.add(value);
+
         }
         else {
+            console.log(`${this} adding ${this.table}[${value.id}] {Proxy}`);
             this._set.add(value.id);
         }
 
+        console.log(`${this}`);
+
         return this;
+    }
+
+    public toString(): string {
+        return `DBSET for ${this.objType}[${this.obj.id}/"${this.obj.name}"] ${pluralName(this.table)}:[${Array([...this._set])}]`;
     }
 
     /**
@@ -50,8 +65,10 @@ export class DbSet<T extends ModelName> {
      */
     public [InternalDelete](value: ModelProxy<T> | number): boolean {
         if (typeof value === 'number') {
+            console.log(`${this} deleting ${this.table}[${value}] {number}`);
             return this._set.delete(value);
         }
+        console.log(`${this} deleting ${this.table}[${value.id}] {Proxy}`);
         return this._set.delete(value.id);
     }
 

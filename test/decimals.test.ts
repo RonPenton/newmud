@@ -18,7 +18,7 @@ describe('test', () => {
             ]
         });
 
-        let x = parse('item', item) as any;
+        let x = parse(item);
 
         expect((x.property as Decimal).eq(42526.4)).toEqual(true);
         expect((x.array[0] as Decimal).eq(42)).toEqual(true);
@@ -44,7 +44,7 @@ describe('test', () => {
 
         const ser = stringify(item);
         console.log(ser);
-        const des = parse('item', ser) as any;
+        const des = parse(ser);
 
         expect(des.native).toEqual(123);
         expect(des.nativeStr).toEqual("12345");

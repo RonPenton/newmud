@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { RTTI } from "../../rtti";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
@@ -12,8 +13,9 @@ const registration = registerModel({
     descriptor: {
         id: RTTI.id(),
         name: RTTI.of<string>(),
-        room: RTTI.optional(RTTI.modelPointer('room')),
-        actor: RTTI.optional(RTTI.modelPointer('actor')),
+        room: RTTI.nullable(RTTI.modelPointer('room')),
+        actor: RTTI.nullable(RTTI.modelPointer('actor')),
+        cost: RTTI.of<Decimal>(),
     }
 });
 

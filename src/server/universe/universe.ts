@@ -29,7 +29,8 @@ export class UniverseManager {
         const linkers: (() => void)[] = [];
         modelNames.forEach(table => {
             this.storage[table].forEach(item => {
-                this.proxies[table].set(item.id, getProxyObject(table, this, item, linkers) as any);
+                const proxy = getProxyObject(table, this, item, linkers);
+                this.proxies[table].set(proxy.id, proxy as any);
             });
         });
         linkers.forEach(linker => linker());
@@ -44,6 +45,10 @@ export class UniverseManager {
         } else {
             this.changesets[type].add(id.id);
         }
+    }
+
+    public getDirtyObjects(): UniverseChangesets {
+        return this.changesets;
     }
 
     public getRecord<T extends ModelName>(type: T, id: number): ModelProxy<T> | undefined {
