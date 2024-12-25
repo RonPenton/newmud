@@ -32,7 +32,7 @@ export const RTTI = {
         };
     },
 
-    modelPointer: <T extends ModelName>(modelName: T): ModelPointer<T> => {
+    modelPointer: <T extends ModelName>(modelName: T): ModelPointer<T> & TypeDescriptor<T> => {
         return {
             modelPointerName: modelName,
             typeDescriptor: () => { throw new Error('not implemented') },
@@ -64,15 +64,16 @@ export const RTTI = {
         };
     },
 
-    recordOfModel: <K extends string, T extends ModelName>(
+    partialRecord: <K extends string, T extends TypeDescriptor<any>>(
         recordKeys: readonly K[],
-        modelName: T
-    ): TypeDescriptor<Record<K, ModelPointer<T> & Optional>> & IsObject => {
+        descriptor: T
+    ): TypeDescriptor<Record<K, T & Optional>> & IsObject => {
 
+        const desc = RTTI.optional(descriptor);
         const object = recordKeys.reduce((acc, key) => {
-            acc[key] = RTTI.optional(RTTI.modelPointer(modelName));
+            acc[key] = desc;
             return acc;
-        }, {} as Record<K, ModelPointer<T>>);
+        }, {} as Record<K, T & Optional>);
 
         return {
             object,

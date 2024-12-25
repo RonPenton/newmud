@@ -1,4 +1,13 @@
-import { IsObject, ModelPointer, ObjectDescriptor, Optional, ReadOnly, TypeDescriptor } from '../rtti/types';
+import { DbSet, InternalAdd } from '../db/dbset';
+import {
+    IsObject,
+    ModelPointer,
+    ObjectDescriptor,
+    Optional,
+    ReadOnly,
+    TypeDescriptor,
+    Nullable
+} from '../rtti/types';
 import { ModelName } from './ModelNames';
 import { Models } from './Models';
 
@@ -26,8 +35,11 @@ export type NonOptionalMutableKeys<T extends ObjectDescriptor> = keyof {
 
 export type DescriptorType<T extends TypeDescriptor<any>> = T extends TypeDescriptor<infer U> ? U : never;
 
+export type InferNull<T> =
+    T extends Nullable ? null : never;
+
 export type InferStorageLeaf<T> =
-    T extends ModelPointer<any> ? number
+    T extends ModelPointer<any> ? number | InferNull<T>
     : T extends TypeDescriptor<infer U> ? U
     : never;
 
@@ -48,7 +60,7 @@ export type InferStorageObject<T extends ObjectDescriptor> =
     >;
 
 export type InferProxyLeaf<T> =
-    T extends ModelPointer<infer M> ? ModelProxy<M>
+    T extends ModelPointer<infer M> ? ModelProxy<M> | InferNull<T>
     : T extends TypeDescriptor<infer U> ? U
     : never;
 
@@ -100,7 +112,7 @@ type EveryPointsTo<T extends ModelName> = keyof {
 }
 
 export type AddSets<T extends ModelName> = T extends ModelName ? {
-    [K in EveryPointsTo<T> as ModelPlural<K>]: Storage<K>[];
+    [K in EveryPointsTo<T> as ModelPlural<K>]: DbSet<K>;
 } : {};
 
 export type DbObject = {

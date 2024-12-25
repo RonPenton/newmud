@@ -25,7 +25,9 @@
     // "moduleDetection": "auto",                        /* Control what method is used to detect module-format JS files. */
 
     /* Modules */
-    "module": "commonjs",                                /* Specify what module code is generated. */
+    "module": "CommonJS",                                /* Specify what module code is generated. */
+    // "allowImportingTsExtensions": true,               /* Allow importing .ts files as modules. */
+    // "rewriteRelativeImportExtensions": true,          /* Enable re-writing of non-relative module names to relative paths. */
     "rootDir": "./",                                  /* Specify the root folder within your source files. */
     "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */

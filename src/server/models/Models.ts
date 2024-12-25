@@ -1,10 +1,10 @@
-import { DbObjectDescriptor, ObjectDescriptor } from "../rtti/types";
+import { DbObjectDescriptor } from "../rtti/types";
 import { ModelName, ModelNameRegistration } from "./ModelNames";
 
 export interface Models { }
 
 export type ModelRegistration<
-    T extends ObjectDescriptor,
+    T extends DbObjectDescriptor,
     N extends string,
     P extends string,
 > = ModelNameRegistration<N, P> & {

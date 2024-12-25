@@ -9,7 +9,7 @@ export type FullTypeDescriptor<T> = TypeDescriptor<T> & Partial<
     Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject
 >;
 
-export type ObjectDescriptor = Record<string, TypeDescriptor<any>>;
+export type ObjectDescriptor = Record<string, FullTypeDescriptor<any>>;
 
 export type DbObjectDescriptor = {
     id: TypeDescriptor<number> & ReadOnly;
@@ -31,9 +31,16 @@ export type ReadOnly = {
 
 export type ModelPointer<T extends ModelName> = {
     modelPointerName: T;
-    typeDescriptor: () => T;
 }
 
 export type IsObject = {
     object: ObjectDescriptor;
+}
+
+export function isObject(obj: any): obj is IsObject {
+    return obj.object !== undefined && typeof obj.object === 'object';
+}
+
+export function isModelPointer(obj: any): obj is ModelPointer<any> {
+    return obj.modelPointerName !== undefined;
 }

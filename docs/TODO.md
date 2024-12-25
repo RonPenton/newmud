@@ -1,3 +1,8 @@
+- [ ] Proxy Class implementation
+- [ ] Action system (RTTI?)
+
+
+
 - [ ] database saving
 - [ ] world timer
 - [ ] nested commands

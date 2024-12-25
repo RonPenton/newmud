@@ -13,6 +13,16 @@ const registration = registerModel({
         id: RTTI.id(),
         name: RTTI.of<string>(),
         room: RTTI.modelPointer('room'),
+        obj: RTTI.object({
+            x: RTTI.of<number>(),
+            y: RTTI.of<number>(),
+            z: RTTI.of<number>(),
+            sub: RTTI.object({
+                a: RTTI.nullable(RTTI.of<number>()),
+                b: RTTI.optional(RTTI.of<number>()),
+                c: RTTI.readonly(RTTI.of<number>()),
+            })
+        })
     }
 });
 
