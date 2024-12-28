@@ -40,14 +40,16 @@ export function getUniverseStorage(): UniverseStorage {
                 name: 'Sword!',
                 actor: 1,
                 room: null,
-                cost: new Decimal(10)
+                cost: new Decimal(10),
+                itemTemplate: 0
             },
             {
                 id: 2,
                 name: 'Shield!',
                 actor: 2,
                 room: null,
-                cost: new Decimal(5)
+                cost: new Decimal(5),
+                itemTemplate: 0
             }
         ],
         room: [{
@@ -55,6 +57,8 @@ export function getUniverseStorage(): UniverseStorage {
             name: 'test room',
             exits: {}
         }],
-        portal: []
+        portal: [],
+        world: [],
+        itemTemplate: []
     };
 }

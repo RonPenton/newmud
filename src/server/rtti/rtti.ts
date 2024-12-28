@@ -6,7 +6,9 @@ import {
     Nullable,
     ObjectDescriptor,
     Optional,
+    PointsBack,
     ReadOnly,
+    TemplatedFrom,
     TypeDescriptor
 } from "./types";
 
@@ -36,6 +38,22 @@ export const RTTI = {
         return {
             modelPointerName: modelName,
             typeDescriptor: () => { throw new Error('not implemented') },
+        };
+    },
+
+    ownedBy: <T extends ModelName>(modelName: T): ModelPointer<T> & TypeDescriptor<T> & PointsBack => {
+        return {
+            modelPointerName: modelName,
+            typeDescriptor: () => { throw new Error('not implemented') },
+            pointsBack: true,
+        };
+    },
+
+    templatedFrom: <T extends ModelName>(modelName: T): ModelPointer<T> & TypeDescriptor<T> & TemplatedFrom => {
+        return {
+            modelPointerName: modelName,
+            typeDescriptor: () => { throw new Error('not implemented') },
+            templatedFrom: true,
         };
     },
 

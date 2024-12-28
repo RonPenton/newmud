@@ -1,4 +1,4 @@
-import { DbSet, InternalAdd } from '../db/dbset';
+import { DbSet } from '../db/dbset';
 import {
     IsObject,
     ModelPointer,
@@ -6,7 +6,8 @@ import {
     Optional,
     ReadOnly,
     TypeDescriptor,
-    Nullable
+    Nullable,
+    PointsBack
 } from '../rtti/types';
 import { ModelName } from './ModelNames';
 import { Models } from './Models';
@@ -104,7 +105,7 @@ type flatten<T> = identity<{
 export type WithoutDescriptor<T extends TypeDescriptor<any>> = Omit<T, 'typeDescriptor'>;
 
 type PointsTo<T extends ModelName, U extends ModelName> = keyof {
-    [K in keyof D<T> as D<T>[K] extends ModelPointer<U> ? T : never]: T;
+    [K in keyof D<T> as D<T>[K] extends ModelPointer<U> & PointsBack ? T : never]: T;
 }
 
 type EveryPointsTo<T extends ModelName> = keyof {
@@ -120,8 +121,8 @@ export type DbObject = {
     name: string;
 }
 
-export type Storage<T extends ModelName> = InferStorageObject<D<T>> & DbObject;
+export type Storage<T extends ModelName> = flatten<InferStorageObject<D<T>> & DbObject>;
 
-export type ModelProxy<T extends ModelName> = InferProxyObject<D<T>> & AddSets<T> & DbObject;
+export type ModelProxy<T extends ModelName> = flatten<InferProxyObject<D<T>> & AddSets<T> & DbObject>;
 
 export type ModelPlural<T extends ModelName> = Models[T]['plural'];

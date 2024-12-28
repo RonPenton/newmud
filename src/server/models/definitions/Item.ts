@@ -1,7 +1,7 @@
-import Decimal from "decimal.js";
 import { RTTI } from "../../rtti";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
+import { registration as itemTemplateRegistration } from "./itemTemplate";
 
 const name = registerModelName({
     name: 'item',
@@ -11,11 +11,11 @@ const name = registerModelName({
 const registration = registerModel({
     ...name,
     descriptor: {
-        id: RTTI.id(),
-        name: RTTI.of<string>(),
-        room: RTTI.nullable(RTTI.modelPointer('room')),
-        actor: RTTI.nullable(RTTI.modelPointer('actor')),
-        cost: RTTI.of<Decimal>(),
+        ...itemTemplateRegistration.descriptor, // inherit base properties from itemTemplate
+
+        room: RTTI.nullable(RTTI.ownedBy('room')),
+        actor: RTTI.nullable(RTTI.ownedBy('actor')),
+        itemTemplate: RTTI.templatedFrom('itemTemplate'),
     }
 });
 

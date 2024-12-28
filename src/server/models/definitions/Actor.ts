@@ -12,7 +12,7 @@ const registration = registerModel({
     descriptor: {
         id: RTTI.id(),
         name: RTTI.of<string>(),
-        room: RTTI.modelPointer('room'),
+        room: RTTI.ownedBy('room'),
         obj: RTTI.object({
             x: RTTI.of<number>(),
             y: RTTI.of<number>(),

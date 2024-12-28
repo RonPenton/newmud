@@ -1,3 +1,4 @@
+import { Mode } from "fs";
 import { ModelName } from "../models/ModelNames";
 
 export type TypeDescriptor<T> = {
@@ -33,6 +34,14 @@ export type ModelPointer<T extends ModelName> = {
     modelPointerName: T;
 }
 
+export type PointsBack = {
+    pointsBack: true;
+}
+
+export type TemplatedFrom = {
+    templatedFrom: true;
+}
+
 export type IsObject = {
     object: ObjectDescriptor;
 }
@@ -43,4 +52,12 @@ export function isObject(obj: any): obj is IsObject {
 
 export function isModelPointer(obj: any): obj is ModelPointer<any> {
     return obj.modelPointerName !== undefined;
+}
+
+export function isPointsBack(obj: any): obj is PointsBack {
+    return obj.pointsBack !== undefined;
+}
+
+export function isTwoWayLink(obj: any): obj is PointsBack & ModelPointer<any> {
+    return obj.pointsBack !== undefined && obj.modelPointerName !== undefined;
 }

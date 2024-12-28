@@ -1,12 +1,19 @@
 import DeepProxy from 'proxy-deep';
 //import Decimal from 'decimal.js';
-import { UniverseManager, UniverseStorage } from '../universe/universe';
-import { Storage, ModelName, ModelProxy, modelRegistrations, loadModelFiles, pluralName, PluralName } from '../models';
+import { UniverseManager } from '../universe/universe';
+import {
+    Storage,
+    ModelName,
+    ModelProxy,
+    modelRegistrations,
+    pluralName,
+    PluralName
+} from '../models';
 import {
     DbObjectDescriptor,
     FullTypeDescriptor,
-    isModelPointer,
     isObject,
+    isTwoWayLink,
     ObjectDescriptor
 } from '../rtti/types';
 import { recordFilter, recordMap } from 'tsc-utils';
@@ -24,7 +31,7 @@ export function getProxyObject<T extends ModelName>(
 
     const recordDescriptors = recordMap(modelRegistrations, reg => reg.descriptor as ObjectDescriptor);
     const recordsLinkingToThis = Object.keys(recordFilter(recordDescriptors, def => {
-        return Object.values(def).some(val => isModelPointer(val) && val.modelPointerName === type);
+        return Object.values(def).some(val => isTwoWayLink(val) && val.modelPointerName === type);
     }));
 
     const dbSets = recordsLinkingToThis.reduce((acc, name) => {
@@ -40,10 +47,10 @@ export function getProxyObject<T extends ModelName>(
         // fills the virtual "db set" object with references to this object. 
 
         // first find all links on this object to other objects.
-        const modelLinks = recordFilter(typeDef, (def) => isModelPointer(def));
+        const modelLinks = recordFilter(typeDef, (def) => isTwoWayLink(def));
 
         for (const [key, def] of Object.entries(modelLinks)) {
-            console.log(`Attempting to link ${type}[${obj.id}] to ${key}[${obj[key as keyof typeof obj]}]`);
+            // console.log(`Attempting to link ${type}[${obj.id}] to ${key}[${obj[key as keyof typeof obj]}]`);
 
             // the linked type has a dbset of links back to this object.
             // for example an "actor" has a dbset of "items", and we'll add this item's ID 
@@ -66,11 +73,9 @@ export function getProxyObject<T extends ModelName>(
                 throw new Error(`Could not find linked object ${linkedType}[${linkedId}]`);
             }
 
-            console.log(`Linking ${type}[${obj.id}] to ${linkedType}[${linkedId}]`);
+            // console.log(`Linking ${type}[${obj.id}] to ${linkedType}[${linkedId}]`);
             let set = linkedObj[pluralName(type)];
             if (!(set instanceof DbSet)) {
-                console.log(linkedObj);
-                console.log(set);
                 throw new Error(`Invalid DbSet for ${linkedType}[${linkedId}].${pluralName(type)}`);
             } else {
                 set[InternalAdd](obj.id);
@@ -110,7 +115,6 @@ export function getProxyObject<T extends ModelName>(
             if (def.isReadOnly === true) {
                 throw new Error(`Cannot set read-only property ${pathStr}`);
             }
-
             if (value === null && def.isNullable !== true) {
                 throw new Error(`Cannot set non-nullable property ${pathStr} to {null}`);
             }
@@ -215,9 +219,6 @@ export function getProxyObject<T extends ModelName>(
 function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescriptor<any>, keys: PropertyKey[]) {
     let obj = root;
     for (const key of keys) {
-        // console.log(`obj: ${JSON.stringify(obj)}`);
-        // console.log(`key: ${String(key)}`);
-
         if (isObject(obj)) {
             obj = obj.object[String(key)];
         }
@@ -228,87 +229,3 @@ function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescri
 
     return obj;
 }
-
-async function go() {
-
-    await loadModelFiles();
-
-    const us: UniverseStorage = {
-        actor: [{
-            id: 1,
-            name: 'actor 1',
-            room: 1,
-            obj: {
-                x: 1,
-                y: 2,
-                z: 3,
-                sub: {
-                    a: 4,
-                    b: 5,
-                    c: 6
-                }
-            }
-        },
-        {
-            id: 2,
-            name: 'actor 2',
-            room: 1,
-            obj: {
-                x: 1,
-                y: 2,
-                z: 3,
-                sub: {
-                    a: 4,
-                    b: 5,
-                    c: 6
-                }
-            }
-
-        }],
-        item: [
-            {
-                id: 1,
-                name: 'test item',
-                actor: 1,
-                room: null,
-                cost: new Decimal(10)
-            }
-        ],
-        room: [{
-            id: 1,
-            name: 'test room',
-            exits: {}
-        }],
-        portal: []
-    };
-
-    const um = new UniverseManager(us);
-
-    const x = um.getRecord('actor', 1);
-
-    if (x) {
-        console.log(x.name);
-
-        x.items.forEach(item => { console.log(item.name); });
-    }
-
-    console.log(um.getDirtyObjects());
-    const item = um.getRecord('item', 1);
-    const actor2 = um.getRecord('actor', 2);
-    if (item && actor2) {
-        console.log(um.getDirtyObjects());
-        console.log(`item name: ${item.name}`);
-        console.log(`item cost: ᚱ${item.cost}`);
-        console.log(`item owner name: ${item.actor?.name}`);
-
-        //item.actor = actor2;
-        item.cost = new Decimal(20);
-        console.log(`item owner name: ${item.actor?.name}`);
-        console.log(`item cost: ᚱ${item.cost}`);
-        console.log(um.getDirtyObjects());
-    }
-
-
-}
-
-//void go();
