@@ -1,5 +1,5 @@
 import { registerAction } from "../registry";
-import { InferAction, Type } from "../action";
+import { InferAction } from "../action";
 import { Direction } from "../../utils/direction";
 
 const registration = registerAction({
