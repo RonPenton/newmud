@@ -15,11 +15,19 @@
 // 14. Lock - <performer:actor> locks one of <performer.room.exits>
 // 15. Unlock - <performer:actor> unlocks one of <performer.room.exits>
 // 16. Talk - <performer:actor> talks to one of <performer.room.actors>
+// 17. Hide - <performer:actor> hides one of <performer.items>
+// 18. Search - <performer:actor> searches one of <performer.room.exits>
+// 19. Push - <performer:actor> pushes one of <performer.room.items>
+// 20. Pull - <performer:actor> pulls one of <performer.room.items>
+// 21. Climb - <performer:actor> climbs one of <performer.room.items>
+// 22. Use - <performer:actor> uses one of <performer.items> or <performer.room.items>
+// 23. Telepath - <performer:actor> telepathically communicates with one of <performer.world.players>
+// 24. Steal - <performer:actor> steals from one of <performer.room.actors> taking one of <performer.room.actors.items>
 
 
 
-const move = {
-    performer: Actions.Performer('actor'),
-
-
-}
+const move = registerAction({
+    performer: 'actor',
+    parameters: p => ({
+        direction: p.exits
+        })
