@@ -13,8 +13,8 @@ const registration = registerModel({
     descriptor: {
         ...itemTemplateRegistration.descriptor, // inherit base properties from itemTemplate
 
-        room: RTTI.nullable(RTTI.ownedBy('room')),
-        actor: RTTI.nullable(RTTI.ownedBy('actor')),
+        room: RTTI.ownedBy('room').nullable(),
+        actor: RTTI.ownedBy('actor').nullable(),
         itemTemplate: RTTI.templatedFrom('itemTemplate'),
     }
 });

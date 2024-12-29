@@ -34,6 +34,4 @@ type InferType<T extends string> = T extends `#${string}` ? number : string;
 
 type Name<T> = T extends `#${infer U}` ? Name<U> : T extends `${infer U}?` ? Name<U> : T;
 
-type B = Name<'#quantity?'>; // 'quantity'
-
 type A = ParseRaw<typeof give>; // 'action' | 'exit'

@@ -18,9 +18,9 @@ const registration = registerModel({
             y: RTTI.of<number>(),
             z: RTTI.of<number>(),
             sub: RTTI.object({
-                a: RTTI.nullable(RTTI.of<number>()),
-                b: RTTI.optional(RTTI.of<number>()),
-                c: RTTI.readonly(RTTI.of<number>()),
+                a: RTTI.of<number>().nullable(),
+                b: RTTI.of<number>().optional(),
+                c: RTTI.of<number>().readonly(),
             })
         })
     }

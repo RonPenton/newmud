@@ -126,3 +126,9 @@ export type Storage<T extends ModelName> = flatten<InferStorageObject<D<T>> & Db
 export type ModelProxy<T extends ModelName> = flatten<InferProxyObject<D<T>> & AddSets<T> & DbObject>;
 
 export type ModelPlural<T extends ModelName> = Models[T]['plural'];
+
+
+type X =  Storage<'actor'>;
+
+type Y = Models['actor']['descriptor'];
+type Z = Models['item']['descriptor'];

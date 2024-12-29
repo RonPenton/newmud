@@ -15,10 +15,13 @@ const registration = registerModel({
     descriptor: {
         id: RTTI.id(),
         name: RTTI.of<string>(),
-        exits: RTTI.partialRecord(Directions, RTTI.object({
-            room: RTTI.readonly(RTTI.nullable(RTTI.modelPointer('room'))),
-            portal: RTTI.readonly(RTTI.optional(RTTI.modelPointer('portal'))),
-        }))
+        exits: RTTI.partialRecord(
+            Directions,
+            RTTI.object({
+                room: RTTI.modelPointer('room').nullable().readonly(),
+                portal: RTTI.modelPointer('portal').optional().readonly(),
+            })
+        )
     }
 });
 

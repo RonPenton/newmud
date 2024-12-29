@@ -41,10 +41,10 @@ describe('test', () => {
         const storage = getUniverseStorage();
         const manager = new UniverseManager(storage);
 
-        const actor = manager.getRecord('actor', 2);
+        const actor = manager.getRecord('actor', 2)!;
         expect(actor).not.toBeUndefined();
 
-        actor!.obj.x = 2000;
+        actor.obj.x = 2000;
 
         const changes = manager.getDirtyObjects()['actor'];
         expect(changes.size).toBe(1);
@@ -59,11 +59,11 @@ describe('test', () => {
         const storage = getUniverseStorage();
         const manager = new UniverseManager(storage);
 
-        const actor = manager.getRecord('actor', 1);
+        const actor = manager.getRecord('actor', 1)!;
         expect(actor).not.toBeUndefined();
 
 
-        const items = Array.from(actor!.items.values());
+        const items = Array.from(actor.items.values());
 
         expect(items.length).toBe(1);
         expect(items[0].name).toBe('Sword!');

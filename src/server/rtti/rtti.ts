@@ -1,12 +1,10 @@
-import { DescriptorType, WithoutDescriptor } from "../models";
+import { DescriptorType } from "../models";
 import { ModelName } from "../models/ModelNames";
 import {
     IsObject,
     ModelPointer,
-    Nullable,
     ObjectDescriptor,
     Optional,
-    PointsBack,
     ReadOnly,
     TemplatedFrom,
     TypeDescriptor
@@ -18,68 +16,43 @@ export const RTTI = {
         return {
             typeDescriptor: () => { throw new Error('not implemented') },
             isReadOnly: true,
-        };
+        } as const;
     },
 
-    readonly: <T extends TypeDescriptor<any>>(descriptor: T): T & ReadOnly => {
-        return {
-            ...descriptor,
-            isReadOnly: true,
-        };
+    of: <T>() => {
+        return rttiChainable({
+            typeDescriptor: (): T => { throw new Error('not implemented') },
+        });
     },
 
-    of: <T>(): TypeDescriptor<T> => {
-        return {
-            typeDescriptor: () => { throw new Error('not implemented') },
-        };
-    },
-
-    modelPointer: <T extends ModelName>(modelName: T): ModelPointer<T> & TypeDescriptor<T> => {
-        return {
+    modelPointer: <T extends ModelName>(modelName: T) => {
+        return rttiChainable({
             modelPointerName: modelName,
-            typeDescriptor: () => { throw new Error('not implemented') },
-        };
+            typeDescriptor: (): T => { throw new Error('not implemented') },
+        } as const);
     },
 
-    ownedBy: <T extends ModelName>(modelName: T): ModelPointer<T> & TypeDescriptor<T> & PointsBack => {
-        return {
+    ownedBy: <T extends ModelName>(modelName: T) => {
+        return rttiChainable({
             modelPointerName: modelName,
-            typeDescriptor: () => { throw new Error('not implemented') },
+            typeDescriptor: (): T => { throw new Error('not implemented') },
             pointsBack: true,
-        };
+        } as const);
     },
 
     templatedFrom: <T extends ModelName>(modelName: T): ModelPointer<T> & TypeDescriptor<T> & TemplatedFrom => {
-        return {
+        return rttiChainable({
             modelPointerName: modelName,
-            typeDescriptor: () => { throw new Error('not implemented') },
+            typeDescriptor: (): T => { throw new Error('not implemented') },
             templatedFrom: true,
-        };
-    },
-
-    optional: <T extends TypeDescriptor<any>>(descriptor: T): T & Optional => {
-        return {
-            ...descriptor,
-            typeDescriptor: () => { throw new Error('not implemented') },
-            isOptional: true,
-        };
-    },
-
-    nullable: <T extends TypeDescriptor<any>>(
-        descriptor: T
-    ): WithoutDescriptor<T> & TypeDescriptor<DescriptorType<T> | null> & Nullable => {
-        return {
-            ...descriptor,
-            typeDescriptor: () => { throw new Error('not implemented') },
-            isNullable: true,
-        };
+        } as const);
     },
 
     object: <T extends ObjectDescriptor>(object: T): TypeDescriptor<T> & IsObject => {
-        return {
+        return rttiChainable({
             object,
             typeDescriptor: () => { throw new Error('not implemented') },
-        };
+        });
     },
 
     partialRecord: <K extends string, T extends TypeDescriptor<any>>(
@@ -87,22 +60,62 @@ export const RTTI = {
         descriptor: T
     ): TypeDescriptor<Record<K, T & Optional>> & IsObject => {
 
-        const desc = RTTI.optional(descriptor);
+        const desc = rttiChainable(descriptor).optional();
         const object = recordKeys.reduce((acc, key) => {
             acc[key] = desc;
             return acc;
-        }, {} as Record<K, T & Optional>);
+        }, {} as Record<K, typeof desc>);
 
-        return {
+        return rttiChainable({
             object,
             typeDescriptor: () => { throw new Error('not implemented') },
-        }
+        })
     },
+}
 
-    default: <T extends TypeDescriptor<any>>(descriptor: T, defaultValue: DescriptorType<T>): T => {
-        return {
-            ...descriptor,
-            defaultValue,
-        };
+export type RTTIChainable<T extends TypeDescriptor<any>> = ReturnType<typeof rttiChainable<T>>;
+
+export function rttiChainable<T extends TypeDescriptor<any>>(
+    descriptor: T,
+) {
+    return {
+        ...descriptor,
+
+        readonly: () => {
+            return rttiChainable({
+                ...descriptor,
+                isReadOnly: true,
+            } as const);
+        },
+
+        optional: () => {
+            return rttiChainable({
+                ...descriptor,
+                isOptional: true,
+            } as const);
+        },
+
+        nullable: () => {
+            const {
+                typeDescriptor: _,
+                ...rest
+            } = descriptor;
+            return rttiChainable({
+                ...rest,
+                typeDescriptor: (): DescriptorType<T> | null => { throw new Error('not implemented') },
+                isNullable: true,
+            } as const);
+        },
+
+        default: <T extends TypeDescriptor<any>>(descriptor: T, defaultValue: DescriptorType<T>): T => {
+            return rttiChainable({
+                ...descriptor,
+                defaultValue,
+            } as const);
+        }
     }
 }
+
+let a = RTTI.modelPointer('actor');
+
+let b = a.nullable();
