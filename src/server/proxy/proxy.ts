@@ -2,7 +2,7 @@ import DeepProxy from 'proxy-deep';
 //import Decimal from 'decimal.js';
 import { UniverseManager } from '../universe/universe';
 import {
-    Storage,
+    ModelStorage,
     ModelName,
     ModelProxy,
     modelRegistrations,
@@ -23,7 +23,7 @@ import Decimal from 'decimal.js';
 export function getProxyObject<T extends ModelName>(
     type: T,
     universe: UniverseManager,
-    obj: Storage<T>,
+    obj: ModelStorage<T>,
     linkers: (() => void)[]
 ): ModelProxy<T> {
 
@@ -111,6 +111,20 @@ export function getProxyObject<T extends ModelName>(
             const path = [...this.path, key];
             const pathStr = `${type}[${obj.id}].${path.join('.')}`;
             const def = getTypedef(typeDef, path);
+
+            if(!def) {
+                // first see if the most recent descriptor is a "properties" object. 
+                const lowestDef = getLowestTypedef(typeDef, path);
+                if(!lowestDef || lowestDef.properties !== true) {
+                    throw new Error(`Could not find typedef for ${pathStr}`);
+                }
+
+                // this is a sub-property of a properties object, which is free-form and
+                // not governed by the RTTI system. So we'll allow the change and record it.
+                Reflect.set(target, key, value, receiver);
+                universe.setDirty(type, obj.id);
+                return true;
+            }
 
             if (def.isReadOnly === true) {
                 throw new Error(`Cannot set read-only property ${pathStr}`);
@@ -228,4 +242,25 @@ function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescri
     }
 
     return obj;
+}
+
+/**
+ * Used in the event that we cannot find an exact typedef for a given path. This 
+ * function travels up the key path and tries to find the lowest typedef that
+ * exists. 
+ * @param root 
+ * @param keys 
+ * @returns 
+ */
+function getLowestTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescriptor<any>, keys: PropertyKey[]) {
+
+    if(keys.length === 0) {
+        return null;
+    }
+
+    const def = getTypedef(root, keys);
+    if(!def) {
+        return getLowestTypedef(root, keys.slice(0, keys.length - 1));
+    }
+    return def;
 }

@@ -1,6 +1,6 @@
 import { filterIterable, mapIterable } from "tsc-utils";
 import { ModelName, pluralName } from "../models/ModelNames";
-import { ModelProxy, Storage } from "../models";
+import { ModelProxy, ModelStorage } from "../models";
 import { UniverseProxies } from "../universe/universe";
 
 export const InternalAdd = Symbol();
@@ -13,7 +13,7 @@ export class DbSet<T extends ModelName> {
     constructor(
         private readonly table: T,
         private objType: ModelName,
-        private obj: Storage<ModelName>,
+        private obj: ModelStorage<ModelName>,
         private proxies: UniverseProxies
     ) { }
 

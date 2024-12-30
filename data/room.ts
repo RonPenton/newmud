@@ -1,6 +1,6 @@
-import { Storage } from '../src/server/models';
+import { ModelStorage } from '../src/server/models';
 
-const rooms: Storage<'room'>[] = [
+const rooms: ModelStorage<'room'>[] = [
     {
         id: 1,
         name: 'Town Square',

@@ -16,6 +16,9 @@ export function getUniverseStorage(): UniverseStorage {
                     b: 5,
                     c: 6
                 }
+            },
+            properties: {
+
             }
         },
         {
@@ -31,8 +34,12 @@ export function getUniverseStorage(): UniverseStorage {
                     b: 5,
                     c: 6
                 }
+            },
+            properties: {
+                customProperty2: {
+                    customSubProperty: new Decimal(100)
+                }
             }
-
         }],
         item: [
             {

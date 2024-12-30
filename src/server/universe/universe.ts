@@ -1,9 +1,9 @@
 import { ModelName, modelNames } from "../models/ModelNames";
-import { ModelProxy, Storage } from '../models/types';
+import { ModelProxy, ModelStorage } from '../models/types';
 import { getProxyObject } from "../proxy/proxy";
 
 export type UniverseStorage = {
-    [K in ModelName]: Storage<K>[];
+    [K in ModelName]: ModelStorage<K>[];
 }
 
 export type UniverseProxies = {

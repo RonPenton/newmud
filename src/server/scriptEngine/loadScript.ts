@@ -1,31 +1,10 @@
-import { notEmpty } from "tsc-utils";
-import { _scriptLibrary } from ".";
-import { EventsType, Table } from "../db/types";
-import { EventDefinition } from "./base";
-import * as Throttle from 'promise-parallel-throttle';
-import { RoomEventsBase } from "./room";
-import { PortalEventsBase } from "./portal";
+let _scriptLibrary: Map<string, any> = new Map();
 
-type EventsBases = {
-    [K in Table]: Required<EventsType<K>>;
-}
+export async function loadScript(location: string, reload = false): Promise<any> {
 
-const eventBases: EventsBases = {
-    'rooms': RoomEventsBase,
-    'portals': PortalEventsBase,
-    'items': () => ({}),
-    'actors': () => ({}),
-    'roomDescriptions': () => ({}),
-    'worlds': () => ({}),
-}
-
-export async function loadScript<T extends Table>(type: T, name: string, reload = false): Promise<boolean> {
-
-    if (!reload && _scriptLibrary[type].has(name)) {
-        return true;
+    if (!reload && _scriptLibrary.has(location)) {
+        return _scriptLibrary.get(location);
     }
-
-    const location = `./${type}/${name}.ts`;
 
     if (reload === true) {
         // forcing a reload, so delete the old script from the require cache.
@@ -34,29 +13,16 @@ export async function loadScript<T extends Table>(type: T, name: string, reload 
 
     const module = await import(location);
     if (!module) {
-        console.log(`Script not found: ${type}::${name}`);
-        return false;
+        console.log(`Script not found: ${location}`);
+        return null;
     }
 
-    const script = module.script as EventsType<T>;
+    const script = module.script;
     if (!script) {
-        console.log(`Script malformed: ${type}::${name}`);
-        return false;
+        console.log(`Script malformed: ${location}`);
+        return null;
     }
 
-    const filled = { ...eventBases[type], ...script };
-
-    _scriptLibrary[type].set(name, filled);
-    return true;
-}
-
-type HasEvents = {
-    events?: EventDefinition[]
-}
-
-export async function loadScripts<K extends Table>(type: K, array: HasEvents[]) {
-    const tasks = array.flatMap(x => x.events)
-        .filter(notEmpty)
-        .map(x => () => loadScript(type, x.name));
-    await Throttle.all(tasks, { maxInProgress: 5 });
+    _scriptLibrary.set(location, script);
+    return script;
 }

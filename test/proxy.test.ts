@@ -4,6 +4,15 @@ import { getUniverseStorage } from "./fixtures/db1";
 import { loadModelFiles } from "../src/server/models";
 import { UniverseManager } from "../src/server/universe/universe";
 
+declare module "../src/server/models/definitions/actor" {
+    interface ActorProperties { 
+        customProperty?: number;
+        customProperty2?: {
+            customSubProperty?: Decimal;
+        };
+    }
+}
+
 describe('test', () => {
 
     beforeAll(async () => {
@@ -100,7 +109,7 @@ describe('test', () => {
         expect(hasShield).toBe(false);
 
         shield.actor = actor;
-        
+
         hasShield = actor.items.has(shield);
         console.log(actor.items);
         expect(hasShield).toBe(true);
@@ -186,6 +195,52 @@ describe('test', () => {
 
         const items = Array.from(hero.items.values());
         expect(items.length).toBe(0);
+    });
+
+    test('proxy catches changes to extendible properties.', () => {
+
+
+        const storage = getUniverseStorage();
+        const manager = new UniverseManager(storage);
+
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
+
+        const changes = manager.getDirtyObjects()['actor'];
+
+        expect(actor.properties).not.toBeUndefined();
+        expect(actor.properties.customProperty).toBeUndefined();
+        expect(changes.size).toBe(0);
+
+        actor.properties.customProperty = 2000;
+
+        expect(actor.properties.customProperty).toBe(2000);
+        expect(changes.size).toBe(1);
+        expect(changes.has(1)).toBe(true);
+
+        expect(storage.actor[0].properties.customProperty).toBe(2000);
+    });
+
+    test('proxy catches changes to extendible sub-properties.', () => {
+        const storage = getUniverseStorage();
+        const manager = new UniverseManager(storage);
+
+        const actor = manager.getRecord('actor', 2)!;
+        expect(actor).not.toBeUndefined();
+
+        const changes = manager.getDirtyObjects()['actor'];
+
+        expect(actor.properties).not.toBeUndefined();
+        expect(actor.properties.customProperty2!.customSubProperty!.eq(100)).toBe(true);
+        expect(changes.size).toBe(0);
+
+        actor.properties.customProperty2!.customSubProperty = new Decimal('100.000000000000001');
+
+        expect(actor.properties.customProperty2!.customSubProperty.eq('100.000000000000001')).toBe(true);
+        expect(changes.size).toBe(1);
+        expect(changes.has(2)).toBe(true);
+
+        expect(storage.actor[1].properties.customProperty2!.customSubProperty!.eq('100.000000000000001')).toBe(true);
     });
 
 });

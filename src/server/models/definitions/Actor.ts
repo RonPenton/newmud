@@ -1,11 +1,21 @@
 import { RTTI } from "../../rtti";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
+import { ModelProxy } from "../types";
 
 const name = registerModelName({
     name: 'actor',
     plural: 'actors'
 });
+
+/**
+ * A collection of properties free-form properties
+ * that can be attached to an actor by various scripts.
+ */
+export interface ActorProperties {
+
+}
+
 
 const registration = registerModel({
     ...name,
@@ -22,7 +32,8 @@ const registration = registerModel({
                 b: RTTI.of<number>().optional(),
                 c: RTTI.of<number>().readonly(),
             })
-        })
+        }),
+        properties: RTTI.properties<ActorProperties>(),
     }
 });
 

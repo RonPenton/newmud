@@ -1,4 +1,3 @@
-import { Mode } from "fs";
 import { ModelName } from "../models/ModelNames";
 
 export type TypeDescriptor<T> = {
@@ -7,7 +6,7 @@ export type TypeDescriptor<T> = {
 }
 
 export type FullTypeDescriptor<T> = TypeDescriptor<T> & Partial<
-    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject
+    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject & IsProperties
 >;
 
 export type ObjectDescriptor = Record<string, FullTypeDescriptor<any>>;
@@ -34,8 +33,8 @@ export type ModelPointer<T extends ModelName> = {
     modelPointerName: T;
 }
 
-export type PointsBack = {
-    pointsBack: true;
+export type OwnedBy = {
+    ownedBy: true;
 }
 
 export type TemplatedFrom = {
@@ -46,18 +45,22 @@ export type IsObject = {
     object: ObjectDescriptor;
 }
 
+export type IsProperties = {
+    properties: true;
+}
+
 export function isObject(obj: any): obj is IsObject {
-    return obj.object !== undefined && typeof obj.object === 'object';
+    return !!obj && obj.object !== undefined && typeof obj.object === 'object';
 }
 
 export function isModelPointer(obj: any): obj is ModelPointer<any> {
-    return obj.modelPointerName !== undefined;
+    return !!obj && obj.modelPointerName !== undefined;
 }
 
-export function isPointsBack(obj: any): obj is PointsBack {
-    return obj.pointsBack !== undefined;
+export function isOwnedBy(obj: any): obj is OwnedBy {
+    return !!obj && obj.ownedBy !== undefined;
 }
 
-export function isTwoWayLink(obj: any): obj is PointsBack & ModelPointer<any> {
-    return obj.pointsBack !== undefined && obj.modelPointerName !== undefined;
+export function isTwoWayLink(obj: any): obj is OwnedBy & ModelPointer<any> {
+    return !!obj && obj.ownedBy !== undefined && obj.modelPointerName !== undefined;
 }

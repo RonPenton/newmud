@@ -1,17 +1,17 @@
-import { ModelName, Storage } from "../models";
+import { ModelName, ModelStorage } from "../models";
 import { Game } from "../game/game";
 
 /**
  * Infers Model Storage types if specified.
  */
-export type InferFinalModel<T> = T extends ModelName ? Storage<T> : T;
+export type InferFinalModel<T> = T extends ModelName ? ModelStorage<T> : T;
 
 /**
  * Infers Model types if specified, allowing for numbers indicating the object ID, and strings
  * indicating the object name. A "resolver" function will be used to resolve strings and numbers
  * to the final objects. 
  */
-export type InferInputModel<T> = T extends ModelName ? Storage<T> | string | number : T;
+export type InferInputModel<T> = T extends ModelName ? ModelStorage<T> | string | number : T;
 
 /**
  * Infers a leaf node type from a type descriptor.

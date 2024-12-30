@@ -36,7 +36,7 @@ export const RTTI = {
         return rttiChainable({
             modelPointerName: modelName,
             typeDescriptor: (): T => { throw new Error('not implemented') },
-            pointsBack: true,
+            ownedBy: true,
         } as const);
     },
 
@@ -71,6 +71,14 @@ export const RTTI = {
             typeDescriptor: () => { throw new Error('not implemented') },
         })
     },
+
+    properties: <T extends Record<string, any>>() => {
+        return {
+            typeDescriptor: (): T => { throw new Error('not implemented') },
+            properties: true,
+            isReadOnly: true
+        } as const;
+    }
 }
 
 export type RTTIChainable<T extends TypeDescriptor<any>> = ReturnType<typeof rttiChainable<T>>;
