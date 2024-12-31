@@ -39,3 +39,16 @@ export function registerEvent<
 
     return registration;
 };
+
+
+type ExtendsModel<M extends ModelName, T extends string> = T extends `${M}_${infer U}` ? U : never;
+
+type ModelEventsRaw<T extends ModelName> = {
+    [K in keyof EventsRaw as ExtendsModel<T, K>]: EventsRaw[K];
+}
+
+type AllModelEvents = {
+    [K in ModelName]: ModelEventsRaw<K>;
+}
+
+export type Events = AllModelEvents;

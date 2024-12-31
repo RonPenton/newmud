@@ -20,5 +20,5 @@ const registration = registerEvent({
     defaultValue: () => true,
 });
 
-declare module "../Events" { interface Events extends InferEvent<typeof registration> { } }
+declare module "../Events" { interface EventsRaw extends InferEvent<typeof registration> { } }
 
