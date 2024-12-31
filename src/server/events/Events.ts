@@ -1,9 +1,7 @@
 import { InferStorageDescriptor, ModelName } from "../models";
 import { ObjectDescriptor, TypeDescriptor } from "../rtti/types"
 
-export interface Events {
-
-}
+export interface EventsRaw {}
 
 export type EventParameters = ObjectDescriptor;
 export type EventReturn = ObjectDescriptor | TypeDescriptor<any>;
@@ -22,11 +20,8 @@ export type EventRegistration<
 };
 
 export type InferEvent<T extends EventRegistration<any, any, any, any>> = {
-    [K in T['model']]: {
-        [I in T['name']]: T;
-    };
+    [K in T['name'] as `${T['model']}_${T['name']}`]: T;
 };
-
 
 export const allEventRegistrations: Map<ModelName, Map<string, EventRegistration<any, any, any, any>>> = new Map();
 
