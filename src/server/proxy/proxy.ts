@@ -105,7 +105,7 @@ export function getProxyObject<T extends ModelName>(
         return set;
     }
 
-    return new DeepProxy<ModelProxy<T>>(obj as any, {
+    const proxy = new DeepProxy<ModelProxy<T>>(obj as any, {
         set(target, key, value, receiver) {
 
             const path = [...this.path, key];
@@ -206,7 +206,7 @@ export function getProxyObject<T extends ModelName>(
 
             const def = getTypedef(typeDef, path);
             if (!def && dbSets[key as PluralName]) {
-                //console.log(`Getting dbset ${String(key)}`);
+                // no RTTI def found, but it's an inferred reverse DBSet. 
                 return dbSets[key as PluralName];
             }
 
@@ -228,6 +228,8 @@ export function getProxyObject<T extends ModelName>(
             }
         }
     });
+
+    return proxy;
 }
 
 function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescriptor<any>, keys: PropertyKey[]) {

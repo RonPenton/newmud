@@ -78,6 +78,13 @@ export const RTTI = {
             properties: true,
             isReadOnly: true
         } as const;
+    },
+
+    events: <T extends ModelName>(modelName: T) => {
+        return {
+            modelEventsName: modelName,
+            typeDescriptor: (): T => { throw new Error('not implemented') },
+        } as const;
     }
 }
 
@@ -123,7 +130,3 @@ export function rttiChainable<T extends TypeDescriptor<any>>(
         }
     }
 }
-
-let a = RTTI.modelPointer('actor');
-
-let b = a.nullable();

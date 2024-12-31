@@ -1,4 +1,5 @@
 import { DbSet } from '../db/dbset';
+import { EventModelObject } from '../events/types';
 import {
     IsObject,
     ModelPointer,
@@ -7,7 +8,8 @@ import {
     ReadOnly,
     TypeDescriptor,
     Nullable,
-    OwnedBy
+    OwnedBy,
+    ModelEvents
 } from '../rtti/types';
 import { ModelName } from './ModelNames';
 import { Models } from './Models';
@@ -34,6 +36,11 @@ export type NonOptionalMutableKeys<T extends ObjectDescriptor> = keyof {
     [K in NonOptionalKeys<T> as T[K] extends ReadOnly ? never : K]: K;
 }
 
+export type EventStorage = {
+    name: string;
+    parameters?: Record<string, any>;
+}
+
 export type DescriptorType<T extends TypeDescriptor<any>> = T extends TypeDescriptor<infer U> ? U : never;
 
 export type InferNull<T> =
@@ -41,6 +48,7 @@ export type InferNull<T> =
 
 export type InferStorageLeaf<T> =
     T extends ModelPointer<any> ? number | InferNull<T>
+    : T extends ModelEvents<any> ? EventStorage[]
     : T extends TypeDescriptor<infer U> ? U
     : never;
 
@@ -62,6 +70,7 @@ export type InferStorageObject<T extends ObjectDescriptor> =
 
 export type InferProxyLeaf<T> =
     T extends ModelPointer<infer M> ? ModelProxy<M> | InferNull<T>
+    : T extends ModelEvents<infer M> ? EventModelObject<M>
     : T extends TypeDescriptor<infer U> ? U
     : never;
 
@@ -148,3 +157,7 @@ export type ModelStorage<T extends ModelName> = flatten<InferStorageObject<D<T>>
 export type ModelProxy<T extends ModelName> = flatten<InferProxyObject<D<T>> & AddSets<T> & DbObject>;
 
 export type ModelPlural<T extends ModelName> = Models[T]['plural'];
+
+type A = ModelProxy<'room'>;
+
+type B = ModelStorage<'room'>;

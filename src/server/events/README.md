@@ -11,8 +11,12 @@ Events are the basic "building blocks" of what is possible in the game. The scri
 
 This example illustrates the complex chain of events that occurs whenever an "atomic" action is taken in the game. These will be far better managed in discrete event methods rather than relying on the scripts to remember to perform this precise sequence of events every time their script wants to automate the transfer of an item. 
 
-Events start with an event name, they contain a function that executes the logic, and there are various steps that may be executed during the event on the entities involved in the event. There are at least three types of event sub-steps: 
+Events start with an event name, they contain a function that executes the logic, and there are various steps that may be executed during the event on the entities involved in the event. 
 
-1. Information gathering - these allow scripts to fill in or change event information. 
-2. Permission checks - these are checks on the entities asking if the event is allowed to happen.
-3. Notification Messages - these are messages that are sent to the entities involved in the event to indicate that it has happened. 
+Here are the known types of event methods:
+
+1. Visibility Checking - determines if an entity is visible. 
+2. Description Retrieval - determines how the entity is described. 
+3. Pre-event Parameter Resolution - determines values for the event parameters, and allows some parameters to be changed.
+4. Pre-event Permission Checking - determines if the event can be executed.
+5. Post-event Notification - notifies entities of the event having concluded.

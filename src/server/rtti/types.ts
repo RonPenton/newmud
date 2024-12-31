@@ -6,7 +6,7 @@ export type TypeDescriptor<T> = {
 }
 
 export type FullTypeDescriptor<T> = TypeDescriptor<T> & Partial<
-    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject & IsProperties
+    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject & IsProperties & ModelEvents<any>
 >;
 
 export type ObjectDescriptor = Record<string, FullTypeDescriptor<any>>;
@@ -31,6 +31,10 @@ export type ReadOnly = {
 
 export type ModelPointer<T extends ModelName> = {
     modelPointerName: T;
+}
+
+export type ModelEvents<T extends ModelName> = {
+    modelEventsName: T
 }
 
 export type OwnedBy = {

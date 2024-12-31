@@ -1,3 +1,7 @@
+import { Events } from "../events/Events";
+import { EventModelObject } from "../events/types";
+import path from 'path';
+
 let _scriptLibrary: Map<string, any> = new Map();
 
 export async function loadScript(location: string, reload = false): Promise<any> {
@@ -25,4 +29,12 @@ export async function loadScript(location: string, reload = false): Promise<any>
 
     _scriptLibrary.set(location, script);
     return script;
+}
+
+export async function loadModelScript<M extends keyof Events>(
+    model: M,
+    script: string
+): Promise<EventModelObject<M> | null> {
+    const p = path.resolve(__dirname, `../scripts/${model}/${script}.ts`);
+    return await loadScript(p);
 }

@@ -10,6 +10,11 @@ const name = registerModelName(
     }
 );
 
+export const ExitDefinition = RTTI.object({
+    room: RTTI.modelPointer('room').nullable().readonly(),
+    portal: RTTI.modelPointer('portal').optional().readonly(),
+});
+
 const registration = registerModel({
     ...name,
     descriptor: {
@@ -17,11 +22,9 @@ const registration = registerModel({
         name: RTTI.of<string>(),
         exits: RTTI.partialRecord(
             Directions,
-            RTTI.object({
-                room: RTTI.modelPointer('room').nullable().readonly(),
-                portal: RTTI.modelPointer('portal').optional().readonly(),
-            })
-        )
+            ExitDefinition
+        ),
+        events: RTTI.events('room')
     }
 });
 
