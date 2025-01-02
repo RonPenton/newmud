@@ -6,7 +6,7 @@ export type TypeDescriptor<T> = {
 }
 
 export type FullTypeDescriptor<T> = TypeDescriptor<T> & Partial<
-    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject & IsProperties & ModelEvents<any>
+    Optional & Nullable & ReadOnly & ModelPointer<any> & IsObject & IsProperties & ModelLogic<any>
 >;
 
 export type ObjectDescriptor = Record<string, FullTypeDescriptor<any>>;
@@ -14,7 +14,8 @@ export type ObjectDescriptor = Record<string, FullTypeDescriptor<any>>;
 export type DbObjectDescriptor = {
     id: TypeDescriptor<number> & ReadOnly;
     name: TypeDescriptor<string>;
-} & Omit<ObjectDescriptor, 'id' | 'name'>;
+    logic: ModelLogic<any>;
+} & Omit<ObjectDescriptor, 'id' | 'name' | 'logic'>;
 
 
 export type Optional = {
@@ -33,8 +34,8 @@ export type ModelPointer<T extends ModelName> = {
     modelPointerName: T;
 }
 
-export type ModelEvents<T extends ModelName> = {
-    modelEventsName: T
+export type ModelLogic<T extends ModelName> = {
+    modelLogicName: T
 }
 
 export type OwnedBy = {

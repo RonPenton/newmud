@@ -1,6 +1,6 @@
-import { Events } from "../events/Events";
-import { EventModelObject } from "../events/types";
 import path from 'path';
+import { ModelName } from "../models";
+import { LogicModelObject } from '../extensibleLogic/types';
 
 let _scriptLibrary: Map<string, any> = new Map();
 
@@ -31,10 +31,22 @@ export async function loadScript(location: string, reload = false): Promise<any>
     return script;
 }
 
-export async function loadModelScript<M extends keyof Events>(
+function modelScriptName(model: ModelName, script: string) {
+    return path.resolve(__dirname, `../scripts/${model}/${script}.ts`);
+}
+
+export async function loadModelScript<M extends ModelName>(
     model: M,
     script: string
-): Promise<EventModelObject<M> | null> {
-    const p = path.resolve(__dirname, `../scripts/${model}/${script}.ts`);
-    return await loadScript(p);
+): Promise<Partial<LogicModelObject<M>> | null> {
+    return await loadScript(modelScriptName(model, script));
+}
+
+export function getModelScript(model: ModelName, script: string): Partial<LogicModelObject<ModelName>> {
+    const val = _scriptLibrary.get(modelScriptName(model, script));
+    if (!val) {
+        console.log(`Script not found: ${model}::${script}`);
+        return {};
+    }
+    return val;
 }

@@ -80,10 +80,11 @@ export const RTTI = {
         } as const;
     },
 
-    events: <T extends ModelName>(modelName: T) => {
+    logic: <T extends ModelName>(modelName: T) => {
         return {
-            modelEventsName: modelName,
+            modelLogicName: modelName,
             typeDescriptor: (): T => { throw new Error('not implemented') },
+            isReadOnly: true
         } as const;
     }
 }

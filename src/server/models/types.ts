@@ -1,5 +1,5 @@
 import { DbSet } from '../db/dbset';
-import { EventModelObject } from '../events/types';
+import { LogicModelObject } from '../extensibleLogic/types';
 import {
     IsObject,
     ModelPointer,
@@ -9,7 +9,7 @@ import {
     TypeDescriptor,
     Nullable,
     OwnedBy,
-    ModelEvents
+    ModelLogic,
 } from '../rtti/types';
 import { ModelName } from './ModelNames';
 import { Models } from './Models';
@@ -36,7 +36,7 @@ export type NonOptionalMutableKeys<T extends ObjectDescriptor> = keyof {
     [K in NonOptionalKeys<T> as T[K] extends ReadOnly ? never : K]: K;
 }
 
-export type EventStorage = {
+export type LogicStorage = {
     name: string;
     parameters?: Record<string, any>;
 }
@@ -48,7 +48,7 @@ export type InferNull<T> =
 
 export type InferStorageLeaf<T> =
     T extends ModelPointer<any> ? number | InferNull<T>
-    : T extends ModelEvents<any> ? EventStorage[]
+    : T extends ModelLogic<any> ? LogicStorage[]
     : T extends TypeDescriptor<infer U> ? U
     : never;
 
@@ -70,7 +70,7 @@ export type InferStorageObject<T extends ObjectDescriptor> =
 
 export type InferProxyLeaf<T> =
     T extends ModelPointer<infer M> ? ModelProxy<M> | InferNull<T>
-    : T extends ModelEvents<infer M> ? EventModelObject<M>
+    : T extends ModelLogic<infer M> ? LogicModelObject<M>
     : T extends TypeDescriptor<infer U> ? U
     : never;
 
@@ -161,3 +161,17 @@ export type ModelPlural<T extends ModelName> = Models[T]['plural'];
 type A = ModelProxy<'room'>;
 
 type B = ModelStorage<'room'>;
+
+type MP<T extends ModelName> = InferProxyObject<D<T>>;
+
+type G<T extends ModelName> = MP<T> extends { name: any } ? MP<T>['name'] : never;
+
+type H = G<ModelName>;
+
+type HID = {
+    [K in ModelName as MP<K> extends { id: any } ? K : never]: boolean;
+}
+function bep<T extends ModelName>(a: MP<T>) {
+    'id' in a ? a.id : 0;
+    return a.id;
+}

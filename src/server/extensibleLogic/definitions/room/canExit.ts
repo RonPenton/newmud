@@ -1,12 +1,12 @@
-import { ExitDefinition } from "../../models/definitions/room";
-import { RTTI } from "../../rtti";
-import { UniverseManager } from "../../universe/universe";
-import { Direction } from "../../utils";
-import { registerEvent } from "../Events";
+import { ExitDefinition } from "../../../models/definitions/room";
+import { RTTI } from "../../../rtti";
+import { UniverseManager } from "../../../universe/universe";
+import { Direction } from "../../../utils";
+import { registerLogic } from "../../Logic";
 
-const registration = registerEvent({
+const registration = registerLogic({
     model: 'room',
-    name: 'canEnter',
+    name: 'canExit',
     parameters: {
         universe: RTTI.of<UniverseManager>(),
         actor: RTTI.modelPointer('actor'),
@@ -20,5 +20,5 @@ const registration = registerEvent({
     defaultValue: () => true,
 });
 
-declare module "../Events" { interface EventsRaw extends InferEvent<typeof registration> { } }
+declare module "../../Logic" { interface LogicRaw extends InferLogic<typeof registration> { } }
 

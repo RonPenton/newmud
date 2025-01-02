@@ -24,7 +24,7 @@ const registration = registerModel({
             Directions,
             ExitDefinition
         ),
-        events: RTTI.events('room')
+        logic: RTTI.logic('room')
     }
 });
 
