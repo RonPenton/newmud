@@ -1,7 +1,6 @@
 import { RTTI } from "../../rtti";
 import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
-import { ModelProxy } from "../types";
 
 const name = registerModelName({
     name: 'actor',
@@ -15,7 +14,6 @@ const name = registerModelName({
 export interface ActorProperties {
 
 }
-
 
 const registration = registerModel({
     ...name,

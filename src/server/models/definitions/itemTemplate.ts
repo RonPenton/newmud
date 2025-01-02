@@ -14,7 +14,7 @@ export const registration = registerModel({
     descriptor: {
         id: RTTI.id(),
         name: RTTI.of<string>(),
-        cost: RTTI.of<Decimal>(),
+        // cost: RTTI.of<Decimal>(),
     }
 });
 
