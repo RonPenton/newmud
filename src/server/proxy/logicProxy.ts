@@ -1,17 +1,16 @@
-import { UniverseManager } from '../universe/universe';
 import { ModelName, ModelStorage } from '../models';
 import { LogicModelObject } from '../extensibleLogic/types';
 import { allLogicRegistrations } from '../extensibleLogic/Logic';
+import { getModelScript } from '../scriptEngine/loadScript';
 
 export function getLogicProxy<T extends ModelName>(
     type: T,
-    universe: UniverseManager,
-    obj: ModelStorage<T>
+    obj: ModelStorage<ModelName>
 ): LogicModelObject<T> {
 
     const proxy = new Proxy<LogicModelObject<T>>(obj as any, {
 
-        get(target, key, _receiver) {
+        get(_target, key, _receiver) {
             const sets = allLogicRegistrations.get(type);
             if (!sets) {
                 throw new Error(`No logic registration found for ${type}`);
@@ -21,11 +20,17 @@ export function getLogicProxy<T extends ModelName>(
                 throw new Error(`No logic set found for ${String(key)} on ${type}`);
             }
 
+            const scripts = obj.logic.map(l => getModelScript(type, l.name));
             return (args: any) => {
-                const d = set.defaultValue(args);
-                return set(universe, target, ...args);
-            }
+                let d = set.defaultValue(args);
+                for(const script of scripts) {
+                    if(key in script) {
+                        d = (script as any)[key](args, d);
+                    }
+                }
 
+                return d;
+            }
         }
     });
 

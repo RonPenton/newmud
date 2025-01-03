@@ -9,16 +9,10 @@ import {
     pluralName,
     PluralName
 } from '../models';
-import {
-    DbObjectDescriptor,
-    FullTypeDescriptor,
-    isObject,
-    isTwoWayLink,
-    ObjectDescriptor
-} from '../rtti/types';
 import { recordFilter, recordMap } from 'tsc-utils';
 import { DbSet, InternalAdd, InternalDelete } from '../db/dbset';
 import Decimal from 'decimal.js';
+import { isTwoWayLink, ObjectDescriptor } from '../rtti';
 
 export function getProxyObject<T extends ModelName>(
     type: T,

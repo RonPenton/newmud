@@ -15,11 +15,9 @@ export interface ActorProperties {
 
 }
 
-const registration = registerModel({
-    ...name,
-    descriptor: {
-        id: RTTI.id(),
-        name: RTTI.of<string>(),
+const registration = registerModel(
+    name,
+    {
         room: RTTI.ownedBy('room'),
         obj: RTTI.object({
             x: RTTI.of<number>(),
@@ -33,7 +31,7 @@ const registration = registerModel({
         }),
         properties: RTTI.properties<ActorProperties>(),
     }
-});
+);
 
 declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }
 declare module "../Models" { interface Models extends InferModel<typeof registration> { } }

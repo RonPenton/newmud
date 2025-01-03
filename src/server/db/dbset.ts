@@ -32,11 +32,9 @@ export class DbSet<T extends ModelName> {
      * Appends a new element with a specified value to the end of the Set.
      */
     public [InternalAdd](value: ModelProxy<T> | number): this {
-        //console.log(this._set);
         if (typeof value === 'number') {
             console.log(`${this} adding ${this.table}[${value}] {number}`);
             this._set.add(value);
-
         }
         else {
             console.log(`${this} adding ${this.table}[${value.id}] {Proxy}`);

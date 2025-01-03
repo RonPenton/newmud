@@ -1,23 +1,22 @@
+import Decimal from 'decimal.js';
 import { DbSet } from '../db/dbset';
+import { LogicModelObject } from '../extensibleLogic/types';
 import {
+    Coalesce,
     flatten,
+    inferProxyDescriptor,
     inferProxyObject,
     inferStorageObject,
+    LogicStandin,
     ModelPointer,
     OwnedBy,
     ProxyStandin,
-    RTTI,
+    TypeDescriptor,
 } from '../rtti';
-import { Directions } from '../utils';
 import { ModelName } from './ModelNames';
-import { modelRegistrations, Models } from './Models';
+import { Models, defaultModelProperties } from './Models';
 
 type D<T extends ModelName> = Models[T]['descriptor'];
-
-export type LogicStorage = {
-    name: string;
-    parameters?: Record<string, any>;
-}
 
 /**
  * PointsTo<T, U> is a type that determines if A points to B in an "owned by" relationship.
@@ -62,22 +61,75 @@ export type ModelPlural<T extends ModelName> = Models[T]['plural'];
 
 export type InferNull<T> = T extends null ? null : never;
 
-export type ModelStorage<T extends ModelName> = inferStorageObject<D<T>>;
-export type ModelProxy<T extends ModelName> = flatten<ReplaceProxyStandin<inferProxyObject<D<T>>> & AddSets<T>>;
+export type ModelStorage<T extends ModelName> = flatten<
+    inferStorageObject<D<T>>
+//inferStorageObject<typeof defaultModelProperties>
+>;
 
-type ReplaceProxyStandin<T extends Record<string, any>> = flatten<{
+export type InferModelProxy<T extends TypeDescriptor<any, any>> = ReplaceProxyStandins<inferProxyDescriptor<T>>;
+
+
+export type ModelProxy<T extends ModelName> = flatten<
+    // ReplaceLogicStandins<T,
+    //ReplaceProxyStandins<
+    // Coalesce<
+    inferProxyObject<D<T>>
+    //inferProxyObject<typeof defaultModelProperties>
+    // >
+    // >
+    // > 
+    & AddSets<T>
+>;
+
+type ReplaceProxyStandins<T extends Record<string, any>> = flatten<{
     [K in keyof T]: NonNullable<T[K]> extends ProxyStandin<infer U>
     ? ModelProxy<U> | InferNull<T[K]>
-    : NonNullable<T[K]> extends Record<string, any> ? ReplaceProxyStandin<T[K]> | InferNull<T[K]> : T[K]
+    : NonNullable<T[K]> extends Record<string, any> ? ReplaceProxyStandins<T[K]> | InferNull<T[K]>
+    : T[K]
 }>;
 
-export function blerp<T extends ModelName>(model: ModelStorage<T>) {
-    let x: string = model.name;
+type ReplaceLogicStandins<M extends ModelName, T extends Record<string, any>> = {
+    [K in keyof T]: T[K] extends LogicStandin ? 'feep' : T[K];
+}
+
+function bep<M extends ModelName>(model: ModelStorage<M>, p: ModelProxy<M>) {
+    return p.id;
+}
+
+
+interface ZORP {
+}
+
+declare module './' {
+    interface ZORP {
+        room: {
+            id: 'num';
+            name: 'str';
+        },
+        item: {
+            readonly id: 'num';
+            name: 'str';
+            cost: 'num';
+        },
+    }
+}
+
+type TY<T> = T extends 'num' ? number : T extends 'str' ? string : never;
+
+type TR<T> = {
+    [K in keyof T]: TY<T[K]>;
+}
+
+type TYPES = {
+    [K in keyof ZORP]: TR<ZORP[K]>;
+}
+
+type MN = keyof TYPES;
+
+type ST<T extends MN> = TYPES[T];
+
+function zorp<T extends MN>(t: ST<T>) {
+    let x: number = t.id;
+    let y = t.name;
     return x;
 }
-
-type A = {
-    [K in ModelName]: ModelStorage<K>;
-}
-
-type B = ModelStorage<'room'>;

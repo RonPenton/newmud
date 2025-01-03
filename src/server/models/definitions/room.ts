@@ -10,23 +10,20 @@ const name = registerModelName(
     }
 );
 
-// export const ExitDefinition = RTTI.object({
-//     room: RTTI.modelPointer('room').nullable().readonly(),
-//     portal: RTTI.modelPointer('portal').optional().readonly(),
-// });
-
-const registration = registerModel({
-    ...name,
-    descriptor: {
-        id: RTTI.id(),
-        name: RTTI.of<string>(),
-        // exits: RTTI.partialRecord(
-        //     Directions,
-        //     ExitDefinition
-        // ),
-        // logic: RTTI.logic('room')
-    }
+export const ExitDefinition = RTTI.object({
+    room: RTTI.modelPointer('room').nullable().readonly(),
+    portal: RTTI.modelPointer('portal').optional().readonly(),
 });
+
+const registration = registerModel(
+    name,
+    {
+        exits: RTTI.partialRecord(
+            Directions,
+            ExitDefinition
+        )
+    }
+);
 
 declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }
 declare module "../Models" { interface Models extends InferModel<typeof registration> { } }

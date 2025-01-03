@@ -7,7 +7,7 @@ import { registerLogic } from "../../Logic";
 const registration = registerLogic({
     model: 'room',
     name: 'canEnter',
-    parameters: {
+    parameters: RTTI.object({
         universe: RTTI.of<UniverseManager>(),
         actor: RTTI.modelPointer('actor'),
         startingRoom: RTTI.modelPointer('room'),
@@ -15,7 +15,7 @@ const registration = registerLogic({
         direction: RTTI.of<Direction>(),
         exit: ExitDefinition,
         portal: RTTI.modelPointer('portal').optional(),
-    },
+    }),
     result: RTTI.of<boolean>(),
     defaultValue: () => true,
 });

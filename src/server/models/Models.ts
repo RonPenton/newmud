@@ -1,7 +1,19 @@
-import { DbObjectDescriptor } from "../rtti/types";
+import { RTTI, TypeDescriptor } from "../rtti";
 import { ModelName, ModelNameRegistration } from "./ModelNames";
 
-export interface Models { }
+export const defaultModelProperties = {
+    id: RTTI.id(),
+    name: RTTI.of<string>(),
+    logic: RTTI.logic()
+} satisfies Record<string, TypeDescriptor<any, any>>;
+
+export type DefaultModelProperties = typeof defaultModelProperties;
+
+export type DbObjectDescriptorInput = Omit<Record<string, TypeDescriptor<any, any>>, keyof DefaultModelProperties>;
+
+export type DbObjectDescriptor = DefaultModelProperties & DbObjectDescriptorInput;
+
+export interface Models { };
 
 export type ModelRegistration<
     T extends DbObjectDescriptor,
@@ -24,12 +36,20 @@ export const allModelNames: ModelName[] = [];
 export const modelRegistrations: Record<ModelName, ModelRegistration<any, string, string>> = {} as any;
 
 export function registerModel<
-    T extends DbObjectDescriptor,
+    T extends DbObjectDescriptorInput,
     N extends string,
     P extends string
 >(
-    registration: ModelRegistration<T, N, P>
-): ModelRegistration<T, N, P> {
+    name: ModelNameRegistration<N, P>,
+    descriptor: T
+): ModelRegistration<T & DefaultModelProperties, N, P> {
+    const registration = {
+        ...name,
+        descriptor: {
+            ...defaultModelProperties,
+            ...descriptor
+        }
+    };
     modelRegistrations[registration.name as ModelName] = registration;
     allModelNames.push(registration.name as ModelName);
     return registration;
