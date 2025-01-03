@@ -1,29 +1,23 @@
 import { RTTI } from "../../rtti";
 import { Directions } from "../../utils/direction";
-import { registerModelName } from "../ModelNames";
 import { registerModel } from "../Models";
 
-const name = registerModelName(
-    {
-        name: 'room',
-        plural: 'rooms',
-    }
-);
 
 export const ExitDefinition = RTTI.object({
-    room: RTTI.modelPointer('room').nullable().readonly(),
-    portal: RTTI.modelPointer('portal').optional().readonly(),
+    room: RTTI.readonly(RTTI.nullable(RTTI.modelPointer('room')))
+    //portal: RTTI.readonly(RTTI.optional(RTTI.modelPointer('portal')))
 });
 
-const registration = registerModel(
-    name,
-    {
+export const roomRegistration = registerModel({
+    name: 'room',
+    plural: 'rooms',
+    descriptor: RTTI.object({
+        id: RTTI.id(),
+        name: RTTI.of<string>(),
         exits: RTTI.partialRecord(
             Directions,
             ExitDefinition
-        )
-    }
-);
-
-declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }
-declare module "../Models" { interface Models extends InferModel<typeof registration> { } }
+        ),
+        logic: RTTI.logic('room'),
+    })
+})

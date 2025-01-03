@@ -1,5 +1,6 @@
-import Decimal from "decimal.js";
 import { ModelName } from "../models/ModelNames";
+import { ModelProxy } from "../models";
+import { LogicModelObject } from "../extensibleLogic/types";
 
 export type TypeDescriptor<T, U> = {
     storageDescriptor: () => T;
@@ -31,22 +32,6 @@ export type requiredMutableKeys<T extends object> = {
     [k in keyof T]: T[k] extends ReadOnly ? never : T[k] extends Optional ? never : k;
 }[keyof T];
 
-export type addQuestionMarks<T extends object> = {
-    [K in requiredKeys<T>]: T[K];
-} & {
-    [K in optionalKeys<T>]?: T[K];
-};
-
-export type addReadonly<T extends object> = {
-    readonly [K in requiredReadOnlyKeys<T>]: T[K];
-} & {
-    readonly [K in optionalReadOnlyKeys<T>]?: T[K];
-} & {
-    [K in requiredMutableKeys<T>]: T[K];
-} & {
-    [K in optionalMutableKeys<T>]?: T[K];
-};
-
 export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     Optional &
     Nullable &
@@ -54,31 +39,20 @@ export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     ModelPointer<any> &
     IsObject &
     IsProperties &
-    ModelLogic
+    ModelLogic<any>
 >;
 
-export type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
+type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
 
 export type Optional = { isOptional: true; }
 export type Nullable = { isNullable: true; }
 export type ReadOnly = { isReadOnly: true; }
 export type ModelPointer<T extends ModelName> = { modelPointerName: T; }
-export type ModelLogic = { modelLogic: true; }
+export type ModelLogic<T extends ModelName> = { modelLogic: T; }
 export type OwnedBy = { ownedBy: true; }
 export type TemplatedFrom = { templatedFrom: true; }
 export type IsObject = { object: ObjectDescriptor; }
 export type IsProperties = { properties: true; }
-
-/**
- * A hack to get around the circular dependency of ModelProxy<T>
- * requiring RTTI to be defined before it can be used in RTTI
- */
-export type ProxyStandin<T extends ModelName> = { modelPointerName: T; }
-
-/**
- * A hack to get around the circular dependency of Model Logic resolution
- */
-export type LogicStandin = { modelLogic: true }
 
 export type LogicStorage = {
     name: string;
@@ -101,22 +75,28 @@ export function isTwoWayLink(obj: any): obj is OwnedBy & ModelPointer<any> {
     return !!obj && obj.ownedBy !== undefined && obj.modelPointerName !== undefined;
 }
 
-type storageLeaf<D extends TypeDescriptor<any, any>> = D extends TypeDescriptor<infer U, any>
-    ? U extends Decimal ? Decimal 
-    : flatten<U>
-    : never;
-type proxyLeaf<D extends TypeDescriptor<any, any>> = D extends TypeDescriptor<any, infer U>
-    ? U extends Decimal ? Decimal
-    : flatten<U>
-    : never;
+type storageLeaf<D extends TypeDescriptor<any, any>> = StorageType<D>;
+type proxyLeaf<D extends TypeDescriptor<any, any>> = ProxyType<D>;
 
-export type inferStorageObject<T extends ObjectDescriptor> = inferStorage<addQuestionMarks<T>>;
-type inferStorage<T extends ObjectDescriptor> = { [K in keyof T]: storageLeaf<T[K]>; }
+type inferStorageObject<T extends ObjectDescriptor> = flatten<
+    {
+        [K in requiredKeys<T>]: storageLeaf<T[K]>;
+    } & {
+        [K in optionalKeys<T>]?: storageLeaf<T[K]>;
+    }
+>;
 
-export type inferProxyObject<T extends ObjectDescriptor> = inferProxy<addReadonly<T>>;
-type inferProxy<T extends ObjectDescriptor> = { [K in keyof T]: proxyLeaf<T[K]>; }
+type inferProxyObject<T extends ObjectDescriptor> = flatten<{
+    readonly [K in requiredReadOnlyKeys<T>]: proxyLeaf<T[K]>;
+} & {
+    readonly [K in optionalReadOnlyKeys<T>]?: proxyLeaf<T[K]>;
+} & {
+    [K in requiredMutableKeys<T>]: proxyLeaf<T[K]>;
+} & {
+    [K in optionalMutableKeys<T>]?: proxyLeaf<T[K]>;
+}>;
 
-export type inferProxyDescriptor<T extends TypeDescriptor<any, any>> = proxyLeaf<T>;
+type TD = TypeDescriptor<any, any>;
 
 export const RTTI = {
     id: (): TypeDescriptor<number, number> & ReadOnly => {
@@ -127,63 +107,63 @@ export const RTTI = {
         } as const;
     },
 
-    of: <T>(): TypeDescriptor<T, T> & RTTIChainable<TypeDescriptor<T, T>> => {
-        return rttiChainable({
+    of: <T>(): TypeDescriptor<T, T> => {
+        return {
             storageDescriptor: (): T => { throw new Error('not implemented') },
             proxyDescriptor: (): T => { throw new Error('not implemented') },
-        });
+        };
     },
 
     modelPointer: <T extends ModelName>(modelName: T) => {
-        return rttiChainable({
+        return {
             modelPointerName: modelName,
             storageDescriptor: (): number => { throw new Error('not implemented') },
-            proxyDescriptor: (): ProxyStandin<T> => { throw new Error('not implemented') },
-        } as const);
+            proxyDescriptor: (): ModelProxy<T> => { throw new Error('not implemented') },
+        } as const;
     },
 
     ownedBy: <T extends ModelName>(modelName: T) => {
-        return rttiChainable({
+        return {
             modelPointerName: modelName,
             storageDescriptor: (): number => { throw new Error('not implemented') },
-            proxyDescriptor: (): ProxyStandin<T> => { throw new Error('not implemented') },
+            proxyDescriptor: (): ModelProxy<T> => { throw new Error('not implemented') },
             ownedBy: true,
-        } as const);
+        } as const;
     },
 
     templatedFrom: <T extends ModelName>(modelName: T) => {
-        return rttiChainable({
+        return {
             modelPointerName: modelName,
             storageDescriptor: (): number => { throw new Error('not implemented') },
-            proxyDescriptor: (): ProxyStandin<T> => { throw new Error('not implemented') },
+            proxyDescriptor: (): ModelProxy<T> => { throw new Error('not implemented') },
             templatedFrom: true,
-        } as const);
+        } as const;
     },
 
     object: <T extends ObjectDescriptor>(object: T) => {
-        return rttiChainable({
+        return {
             object,
             storageDescriptor: (): inferStorageObject<T> => { throw new Error('not implemented') },
             proxyDescriptor: (): inferProxyObject<T> => { throw new Error('not implemented') },
-        });
+        };
     },
 
-    partialRecord: <K extends string, T extends TypeDescriptor<any, any>>(
+    partialRecord: <K extends string, T extends TD>(
         recordKeys: readonly K[],
         descriptor: T
     ) => {
 
-        const desc = rttiChainable(descriptor).optional();
+        const desc = RTTI.optional(descriptor);
         const object = recordKeys.reduce((acc, key) => {
             acc[key] = desc;
             return acc;
         }, {} as Record<K, typeof desc>);
 
-        return rttiChainable({
+        return {
             object,
             storageDescriptor: (): inferStorageObject<Record<K, typeof desc>> => { throw new Error('not implemented') },
             proxyDescriptor: (): inferProxyObject<Record<K, typeof desc>> => { throw new Error('not implemented') },
-        })
+        }
     },
 
     properties: <T extends Record<string, any>>() => {
@@ -195,57 +175,47 @@ export const RTTI = {
         } as const;
     },
 
-    logic: () => {
+    logic: <T extends ModelName>(model: T) => {
         return {
-            modelLogic: true,
+            modelLogic: model,
             storageDescriptor: (): LogicStorage[] => { throw new Error('not implemented') },
-            proxyDescriptor: (): LogicStandin => { throw new Error('not implemented') },
+            proxyDescriptor: (): LogicModelObject<T> => { throw new Error('not implemented') },
             isReadOnly: true
         } as const;
-    }
-}
+    },
 
-export type RTTIChainable<D extends TypeDescriptor<any, any>> = ReturnType<typeof rttiChainable<D>>;
+    readonly: <T extends TD>(descriptor: T): T & ReadOnly => {
+        return {
+            ...descriptor,
+            isReadOnly: true,
+        } as const;
+    },
 
-export function rttiChainable<D extends TypeDescriptor<any, any>>(
-    descriptor: D,
-) {
-    return {
-        ...descriptor,
+    optional: <T extends TD>(descriptor: T) => {
+        return {
+            ...descriptor,
+            isOptional: true,
+        } as const;
+    },
 
-        readonly: () => {
-            return rttiChainable({
-                ...descriptor,
-                isReadOnly: true,
-            } as const);
-        },
+    nullable: <T extends TD>(descriptor: T) => {
+        const {
+            storageDescriptor,
+            proxyDescriptor,
+            ...rest
+        } = descriptor;
+        return {
+            ...rest,
+            storageDescriptor: (): StorageType<T> | null => { throw new Error('not implemented') },
+            proxyDescriptor: (): ProxyType<T> | null => { throw new Error('not implemented') },
+            isNullable: true,
+        } as const;
+    },
 
-        optional: () => {
-            return rttiChainable({
-                ...descriptor,
-                isOptional: true,
-            } as const);
-        },
-
-        nullable: () => {
-            const {
-                storageDescriptor,
-                proxyDescriptor,
-                ...rest
-            } = descriptor;
-            return rttiChainable({
-                ...rest,
-                storageDescriptor: (): StorageType<D> | null => { throw new Error('not implemented') },
-                proxyDescriptor: (): ProxyType<D> | null => { throw new Error('not implemented') },
-                isNullable: true,
-            } as const);
-        },
-
-        default: (defaultValue: StorageType<D>): D => {
-            return rttiChainable({
-                ...descriptor,
-                defaultValue,
-            } as const);
-        }
+    default: <T extends TD>(descriptor: Text, defaultValue: StorageType<T>) => {
+        return {
+            ...descriptor,
+            defaultValue,
+        } as const;
     }
 }
