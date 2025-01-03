@@ -99,7 +99,10 @@ export function isTwoWayLink(obj: any): obj is OwnedBy & ModelPointer<any> {
 export type storageLeaf<D extends TypeDescriptor<any, any>> = D extends TypeDescriptor<infer U, any> ? flatten<U> : never;
 type proxyLeaf<D extends TypeDescriptor<any, any>> = D extends TypeDescriptor<any, infer U> ? flatten<U> : never;
 
-export type inferStorageObject<T extends ObjectDescriptor> = inferStorage<addReadonly<T>>;
+export type inferStorageObject<T extends ObjectDescriptor> = {
+    [K in keyof T]: storageLeaf<T[K]>;
+}
+//inferStorage<addQuestionMarks<T>>;
 type inferStorage<T extends ObjectDescriptor> = { [K in keyof T]: storageLeaf<T[K]>; }
 
 export type inferProxyObject<T extends ObjectDescriptor> = inferProxy<addReadonly<T>>;
@@ -168,8 +171,8 @@ export const RTTI = {
 
         return rttiChainable({
             object,
-            storageDescriptor: (): inferStorageObject<Record<K, T>> => { throw new Error('not implemented') },
-            proxyDescriptor: (): inferProxyObject<Record<K, T>> => { throw new Error('not implemented') },
+            storageDescriptor: (): inferStorageObject<Record<K, typeof desc>> => { throw new Error('not implemented') },
+            proxyDescriptor: (): inferProxyObject<Record<K, typeof desc>> => { throw new Error('not implemented') },
         })
     },
 

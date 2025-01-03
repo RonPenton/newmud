@@ -6,9 +6,11 @@ import {
     ModelPointer,
     OwnedBy,
     ProxyStandin,
+    RTTI,
 } from '../rtti';
+import { Directions } from '../utils';
 import { ModelName } from './ModelNames';
-import { Models } from './Models';
+import { modelRegistrations, Models } from './Models';
 
 type D<T extends ModelName> = Models[T]['descriptor'];
 
@@ -61,12 +63,21 @@ export type ModelPlural<T extends ModelName> = Models[T]['plural'];
 export type InferNull<T> = T extends null ? null : never;
 
 export type ModelStorage<T extends ModelName> = inferStorageObject<D<T>>;
-export type ModelProxy<T extends ModelName> = flatten<ReplaceProxyStandin<inferProxyObject<D<T>>>>;
+export type ModelProxy<T extends ModelName> = flatten<ReplaceProxyStandin<inferProxyObject<D<T>>> & AddSets<T>>;
 
-type ReplaceProxyStandin<T extends Record<string, any>> = {
+type ReplaceProxyStandin<T extends Record<string, any>> = flatten<{
     [K in keyof T]: NonNullable<T[K]> extends ProxyStandin<infer U>
     ? ModelProxy<U> | InferNull<T[K]>
-    : ReplaceProxyStandin<T[K]>;    // wrong
+    : NonNullable<T[K]> extends Record<string, any> ? ReplaceProxyStandin<T[K]> | InferNull<T[K]> : T[K]
+}>;
+
+export function blerp<T extends ModelName>(model: ModelStorage<T>) {
+    let x: string = model.name;
+    return x;
 }
 
-type A = ModelProxy<'room'>;
+type A = {
+    [K in ModelName]: ModelStorage<K>;
+}
+
+type B = ModelStorage<'room'>;
