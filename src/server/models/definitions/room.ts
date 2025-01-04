@@ -19,5 +19,7 @@ export const roomRegistration = registerModel({
             ExitDefinition
         ),
         logic: RTTI.logic('room'),
+        actors: RTTI.ownedCollection('actor'),
+        items: RTTI.ownedCollection('item'),
     })
 })

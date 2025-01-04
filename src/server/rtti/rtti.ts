@@ -1,6 +1,7 @@
 import { ModelName } from "../models/ModelNames";
 import { ModelProxy } from "../models";
 import { LogicModelObject } from "../extensibleLogic/types";
+import { DbSet } from "../db/dbset";
 
 export type TypeDescriptor<T, U> = {
     storageDescriptor: () => T;
@@ -17,7 +18,9 @@ export type identity<T> = T;
 export type flatten<T> = T extends Record<string, any> ? identity<{ [k in keyof T]: T[k] }> : T;
 
 export type optionalKeys<T extends object> = { [k in keyof T]: T[k] extends Optional ? k : never; }[keyof T];
-export type requiredKeys<T extends object> = { [k in keyof T]: T[k] extends Optional ? never : k; }[keyof T];
+export type requiredKeys<T extends Record<string, TypeDescriptor<any, any>>> = {
+    [k in keyof T]: T[k] extends Optional ? never : StorageType<T[k]> extends never ? never : k; 
+}[keyof T];
 
 export type optionalReadOnlyKeys<T extends object> = {
     [k in keyof T]: T[k] extends ReadOnly ? T[k] extends Optional ? k : never : never;
@@ -39,7 +42,8 @@ export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     ModelPointer<any> &
     IsObject &
     IsProperties &
-    ModelLogic<any>
+    ModelLogic<any> &
+    OwnedCollection<any>
 >;
 
 type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
@@ -53,6 +57,7 @@ export type OwnedBy = { ownedBy: true; }
 export type TemplatedFrom = { templatedFrom: true; }
 export type IsObject = { object: ObjectDescriptor; }
 export type IsProperties = { properties: true; }
+export type OwnedCollection<T extends ModelName> = { ownedCollection: T; }
 
 export type LogicStorage = {
     name: string;
@@ -216,6 +221,15 @@ export const RTTI = {
         return {
             ...descriptor,
             defaultValue,
+        } as const;
+    },
+
+    ownedCollection: <T extends ModelName>(modelName: T) => {
+        return {
+            ownedCollection: modelName,
+            isReadOnly: true,
+            storageDescriptor: (): never => { throw new Error('not implemented') },
+            proxyDescriptor: (): DbSet<T> => { throw new Error('not implemented') },
         } as const;
     }
 }

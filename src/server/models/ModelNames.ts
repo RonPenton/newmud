@@ -2,7 +2,9 @@ import { typeArrayValidator } from "../utils/typeArrayValidator";
 
 export const modelNames = [
     'actor',
-    'room'
+    'room',
+    'itemTemplate',
+    'item'
 ] as const;
 
 export type ModelName = typeof modelNames[number];

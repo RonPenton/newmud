@@ -1,23 +1,14 @@
-// import { RTTI } from "../../rtti";
-// import { registerModelName } from "../ModelNames";
-// import { registerModel } from "../Models";
-// import { registration as itemTemplateRegistration } from "./itemTemplate";
+import { RTTI } from "../../rtti";
+import { registerModel } from "../Models";
+import { itemTemplateRegistration } from "./itemTemplate";
 
-// const name = registerModelName({
-//     name: 'item',
-//     plural: 'items',
-// });
-
-// const registration = registerModel(
-//     name,
-//     {
-//         ...itemTemplateRegistration.descriptor, // inherit base properties from itemTemplate
-
-//         room: RTTI.ownedBy('room').nullable(),
-//         actor: RTTI.ownedBy('actor').nullable(),
-//         itemTemplate: RTTI.templatedFrom('itemTemplate'),
-//     }
-// );
-
-// declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }
-// declare module "../Models" { interface Models extends InferModel<typeof registration> { } }
+export const itemRegistration = registerModel({
+    name: 'item',
+    plural: 'items',
+    descriptor: RTTI.object({
+        ...itemTemplateRegistration.descriptor.object,
+        room: RTTI.nullable(RTTI.ownedBy('room')),
+        actor: RTTI.nullable(RTTI.ownedBy('actor')),
+        itemTemplate: RTTI.templatedFrom('itemTemplate'),
+    })
+});
