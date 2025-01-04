@@ -1,6 +1,6 @@
 import { filterIterable, mapIterable } from "tsc-utils";
-import { ModelName, pluralName } from "../models/ModelNames";
-import { ModelProxy, ModelStorage } from "../models";
+import { ModelName } from "../models/ModelNames";
+import { modelPlural, ModelProxy, ModelStorage } from "../models";
 import { UniverseProxies } from "../universe/universe";
 
 export const InternalAdd = Symbol();
@@ -23,7 +23,7 @@ export class DbSet<T extends ModelName> {
         console.log(this.proxies[this.table]);
         const item = this.proxies[this.table].get(id);
         if (!item) {
-            throw new Error(`Item with id ${id} not found in ${pluralName(this.table)}.`);
+            throw new Error(`Item with id ${id} not found in ${modelPlural(this.table)}.`);
         }
         return item;
     }
@@ -47,7 +47,7 @@ export class DbSet<T extends ModelName> {
     }
 
     public toString(): string {
-        return `DBSET for ${this.objType}[${this.obj.id}/"${this.obj.name}"] ${pluralName(this.table)}:[${Array([...this._set])}]`;
+        return `DBSET for ${this.objType}[${this.obj.id}/"${this.obj.name}"] ${modelPlural(this.table)}:[${Array([...this._set])}]`;
     }
 
     /**

@@ -1,8 +1,9 @@
 import Decimal from "decimal.js";
 import { findIterable } from "tsc-utils";
 import { getUniverseStorage } from "./fixtures/db1";
-import { loadModelFiles } from "../src/server/models";
 import { UniverseManager } from "../src/server/universe/universe";
+import '../src/server/models';
+import { loadModelFiles } from "../src/server/models";
 
 declare module "../src/server/models/definitions/actor" {
     interface ActorProperties { 

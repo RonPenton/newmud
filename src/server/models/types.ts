@@ -4,8 +4,7 @@ import { itemRegistration } from "./definitions/item";
 import { itemTemplateRegistration } from "./definitions/itemTemplate";
 import { roomRegistration } from "./definitions/room";
 import { ModelName } from "./ModelNames";
-import { ModelRegistration } from "./Models";
-
+import { ModelRegistration, modelRegistrations } from "./Models";
 
 export interface ModelRegistrations extends Record<ModelName, ModelRegistration<any, any, any>> {
     room: typeof roomRegistration;
@@ -22,30 +21,10 @@ export type ModelStorage<T extends ModelName> = StorageType<ModelDescriptors[T]>
 
 export type ModelProxy<T extends ModelName> = ProxyType<ModelDescriptors[T]>;
 
+export type ModelPlural = ModelRegistrations[ModelName]['plural'];
 
-type A = ModelStorage<'actor'>;
+export type PluralOf<T extends ModelName> = ModelRegistrations[T]['plural'];
 
-type B = ModelProxy<'actor'>;
-
-type C = ModelProxy<'room'>;
-
-type D = ModelStorage<'room'>;
-
-
-function borp<M extends ModelName>(model: ModelStorage<M>, p: ModelProxy<M>) {
-    return p.name;
-    model.name;
-
-    return model.id;
+export function modelPlural<T extends ModelName>(name: T): ModelPlural {
+    return modelRegistrations[name].plural as ModelPlural;
 }
-
-let b: C;
-
-b.actors.map(a => a.name);
-
-b.logic.canEnter({
-
-}, {
-
-})
-

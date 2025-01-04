@@ -1,9 +1,10 @@
-import { InferModelProxy, ModelName } from "../models";
+import { ModelName } from "../models/ModelNames";
+import { ProxyType } from "../rtti";
 import { Logic, LogicParameters, LogicRegistration, LogicReturn } from "./Logic";
 
 
 type FunctionType<P extends LogicParameters, R extends LogicReturn> =
-    (params: InferModelProxy<P>, aggregate: InferModelProxy<R>) => InferModelProxy<R>;
+    (params: ProxyType<P>, aggregate: ProxyType<R>) => ProxyType<R>;
 
 type FunctionTypeForRegistration<T> = T extends LogicRegistration<any, any, infer P, infer R>
     ? FunctionType<P, R>

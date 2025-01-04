@@ -1,6 +1,7 @@
 import { RTTI } from "../../rtti";
 import { Directions } from "../../utils/direction";
 import { registerModel } from "../Models";
+import { defaultProperties } from "./default";
 
 
 export const ExitDefinition = RTTI.object({
@@ -12,13 +13,11 @@ export const roomRegistration = registerModel({
     name: 'room',
     plural: 'rooms',
     descriptor: RTTI.object({
-        id: RTTI.id(),
-        name: RTTI.of<string>(),
+        ...defaultProperties('room'),
         exits: RTTI.partialRecord(
             Directions,
             ExitDefinition
         ),
-        logic: RTTI.logic('room'),
         actors: RTTI.ownedCollection('actor'),
         items: RTTI.ownedCollection('item'),
     })

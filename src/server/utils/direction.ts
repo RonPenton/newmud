@@ -54,9 +54,9 @@ export function getShortDirection(d: Direction): DirectionShort {
 //     return `from the ${direction}`;
 // }
 
-// export const getDirectionOpposite = (direction: Direction) => {
-//     return DirectionOpposites.get(direction)!;
-// }
+export const getDirectionOpposite = (direction: Direction) => {
+    return DirectionOpposites.get(direction)!;
+}
 
 // export const directionReferences = (direction: Direction): string[] => {
 //     return [direction, getShortDirection(direction)];

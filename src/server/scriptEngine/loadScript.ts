@@ -1,6 +1,6 @@
 import path from 'path';
-import { ModelName } from "../models";
 import { LogicModelObject } from '../extensibleLogic/types';
+import { ModelName } from '../models/ModelNames';
 
 let _scriptLibrary: Map<string, any> = new Map();
 

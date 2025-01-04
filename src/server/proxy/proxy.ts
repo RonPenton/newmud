@@ -3,16 +3,16 @@ import DeepProxy from 'proxy-deep';
 import { UniverseManager } from '../universe/universe';
 import {
     ModelStorage,
-    ModelName,
     ModelProxy,
     modelRegistrations,
-    pluralName,
-    PluralName
+    modelPlural,
+    ModelPlural,
 } from '../models';
 import { recordFilter, recordMap } from 'tsc-utils';
 import { DbSet, InternalAdd, InternalDelete } from '../db/dbset';
 import Decimal from 'decimal.js';
-import { isTwoWayLink, ObjectDescriptor } from '../rtti';
+import { FullTypeDescriptor, isObject, isOwnedBy, isOwnedCollection, isTwoWayLink, OwnedCollection } from '../rtti';
+import { ModelName } from '../models/ModelNames';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -21,17 +21,21 @@ export function getProxyObject<T extends ModelName>(
     linkers: (() => void)[]
 ): ModelProxy<T> {
 
-    const typeDef: ObjectDescriptor = modelRegistrations[type].descriptor;
+    const typeDef: FullTypeDescriptor<any, any> = modelRegistrations[type].descriptor;
+    if (!isObject(typeDef)) {
+        throw new Error(`Invalid type descriptor for ${type}, must be object.`);
+    }
 
-    const recordDescriptors = recordMap(modelRegistrations, reg => reg.descriptor as ObjectDescriptor);
-    const recordsLinkingToThis = Object.keys(recordFilter(recordDescriptors, def => {
-        return Object.values(def).some(val => isTwoWayLink(val) && val.modelPointerName === type);
-    }));
+    const setProperties = recordFilter(typeDef.object, def => isOwnedCollection(def));
 
-    const dbSets = recordsLinkingToThis.reduce((acc, name) => {
-        acc[pluralName(name as ModelName)] = new DbSet(name as ModelName, type, obj, universe.proxies);
-        return acc;
-    }, {} as Record<PluralName, DbSet<any>>);
+    // a bit of sanity checking to make sure that the reverse links are set up correctly.
+    // TODO: Maybe do this on game engine load instead so this isn't done every time
+    // a new proxy is built...
+    Object.values(setProperties).forEach(def => verifyOwnedSet(type, def));
+
+    const dbSets = recordMap(setProperties, def => {
+        return new DbSet(def.ownedCollection, type, obj, universe.proxies);
+    });
 
     // add a "linker" function to the global set of linkers that will be executed once
     // all the proxies are created. This has to happen after the proxies are created
@@ -41,7 +45,7 @@ export function getProxyObject<T extends ModelName>(
         // fills the virtual "db set" object with references to this object. 
 
         // first find all links on this object to other objects.
-        const modelLinks = recordFilter(typeDef, (def) => isTwoWayLink(def));
+        const modelLinks = recordFilter(typeDef.object, (def) => isTwoWayLink(def));
 
         for (const [key, def] of Object.entries(modelLinks)) {
             // console.log(`Attempting to link ${type}[${obj.id}] to ${key}[${obj[key as keyof typeof obj]}]`);
@@ -62,15 +66,15 @@ export function getProxyObject<T extends ModelName>(
             if (typeof linkedId !== 'number') {
                 throw new Error(`Invalid linked ID for ${type}[${obj.id}].${key}: ${linkedId}`);
             }
-            const linkedObj = universe.getRecord(linkedType, linkedId);
-            if (linkedObj === undefined) {
+            const linkedObj: any = universe.getRecord(linkedType, linkedId);
+            if (!linkedObj) {
                 throw new Error(`Could not find linked object ${linkedType}[${linkedId}]`);
             }
 
             // console.log(`Linking ${type}[${obj.id}] to ${linkedType}[${linkedId}]`);
-            let set = linkedObj[pluralName(type)];
+            let set = linkedObj[modelPlural(type)];
             if (!(set instanceof DbSet)) {
-                throw new Error(`Invalid DbSet for ${linkedType}[${linkedId}].${pluralName(type)}`);
+                throw new Error(`Invalid DbSet for ${linkedType}[${linkedId}].${modelPlural(type)}`);
             } else {
                 set[InternalAdd](obj.id);
             }
@@ -91,7 +95,7 @@ export function getProxyObject<T extends ModelName>(
         if (!record) {
             throw new Error(`Could not find ${modelPointerName}[${id}]`);
         }
-        const setName = pluralName(type);
+        const setName = modelPlural(type);
         const set = record[setName as keyof typeof record] as unknown as DbSet<any>;
         if (!(set instanceof DbSet)) {
             throw new Error(`Invalid DbSet for ${modelPointerName}[${id}].${setName}`);
@@ -106,10 +110,10 @@ export function getProxyObject<T extends ModelName>(
             const pathStr = `${type}[${obj.id}].${path.join('.')}`;
             const def = getTypedef(typeDef, path);
 
-            if(!def) {
+            if (!def) {
                 // first see if the most recent descriptor is a "properties" object. 
                 const lowestDef = getLowestTypedef(typeDef, path);
-                if(!lowestDef || lowestDef.properties !== true) {
+                if (!lowestDef || lowestDef.properties !== true) {
                     throw new Error(`Could not find typedef for ${pathStr}`);
                 }
 
@@ -183,10 +187,10 @@ export function getProxyObject<T extends ModelName>(
             const pathStr = `${type}[${obj.id}].${path.join('.')}`;
             const def = getTypedef(typeDef, path);
 
-            if (def.isReadOnly === true) {
+            if (def && def.isReadOnly === true) {
                 throw new Error(`Cannot delete read-only property ${pathStr}`);
             }
-            if (def.isOptional !== true) {
+            if (def && def.isOptional !== true) {
                 throw new Error(`Cannot delete non-optional property ${pathStr}`);
             }
 
@@ -199,9 +203,8 @@ export function getProxyObject<T extends ModelName>(
             const path = [...this.path, key];
 
             const def = getTypedef(typeDef, path);
-            if (!def && dbSets[key as PluralName]) {
-                // no RTTI def found, but it's an inferred reverse DBSet. 
-                return dbSets[key as PluralName];
+            if (def && def.ownedCollection && dbSets[key as ModelPlural]) {
+                return dbSets[key as ModelPlural];
             }
 
             const val: any = Reflect.get(target, key, receiver);
@@ -226,8 +229,18 @@ export function getProxyObject<T extends ModelName>(
     return proxy;
 }
 
-function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescriptor<any>, keys: PropertyKey[]) {
-    let obj = root;
+function verifyOwnedSet(m: ModelName, def: OwnedCollection<ModelName>) {
+    const reg = modelRegistrations[def.ownedCollection].descriptor;
+    if (!isObject(reg)) {
+        throw new Error(`Invalid type descriptor for ${def.ownedCollection}, must be object.`);
+    }
+    if (!Object.values(reg.object).some(x => isOwnedBy(x) && x.modelPointerName === m)) {
+        throw new Error(`No reverse link found for ${m} in ${def.ownedCollection}`);
+    }
+}
+
+function getTypedef(root: FullTypeDescriptor<any, any>, keys: PropertyKey[]) {
+    let obj: FullTypeDescriptor<any, any> | null = root;
     for (const key of keys) {
         if (isObject(obj)) {
             obj = obj.object[String(key)];
@@ -248,14 +261,14 @@ function getTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescri
  * @param keys 
  * @returns 
  */
-function getLowestTypedef(root: ObjectDescriptor | DbObjectDescriptor | FullTypeDescriptor<any>, keys: PropertyKey[]) {
+function getLowestTypedef(root: FullTypeDescriptor<any, any>, keys: PropertyKey[]) {
 
-    if(keys.length === 0) {
+    if (keys.length === 0) {
         return null;
     }
 
     const def = getTypedef(root, keys);
-    if(!def) {
+    if (!def) {
         return getLowestTypedef(root, keys.slice(0, keys.length - 1));
     }
     return def;

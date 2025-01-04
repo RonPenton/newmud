@@ -1,6 +1,5 @@
-import { InferModelProxy, ModelName } from "../models";
-import { TypeDescriptor } from "../rtti";
-import {  } from "../rtti/types"
+import { ModelName } from "../models/ModelNames";
+import { ProxyType, TypeDescriptor } from "../rtti";
 
 export interface LogicRaw {}
 
@@ -17,7 +16,7 @@ export type LogicRegistration<
     name: N,
     parameters: P, 
     result: R,
-    defaultValue: (params: InferModelProxy<P>) => InferModelProxy<R>
+    defaultValue: (params: ProxyType<P>) => ProxyType<R>
 };
 
 export type InferLogic<T extends LogicRegistration<any, any, any, any>> = {

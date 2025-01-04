@@ -1,5 +1,6 @@
 import { RTTI } from "../../rtti";
 import { registerModel } from "../Models";
+import { defaultProperties } from "./default";
 
 /**
  * A collection of properties free-form properties
@@ -13,8 +14,7 @@ export const actorRegistration = registerModel({
     name: 'actor',
     plural: 'actors',
     descriptor: RTTI.object({
-        id: RTTI.id(),
-        name: RTTI.of<string>(),
+        ...defaultProperties('actor'),
         room: RTTI.ownedBy('room'),
         obj: RTTI.object({
             x: RTTI.of<number>(),
@@ -27,5 +27,6 @@ export const actorRegistration = registerModel({
             })
         }),
         properties: RTTI.properties<ActorProperties>(),
+        items: RTTI.ownedCollection('item'),
     })
 });

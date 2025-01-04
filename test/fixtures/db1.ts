@@ -19,7 +19,8 @@ export function getUniverseStorage(): UniverseStorage {
             },
             properties: {
 
-            }
+            },
+            logic: []
         },
         {
             id: 2,
@@ -39,7 +40,8 @@ export function getUniverseStorage(): UniverseStorage {
                 customProperty2: {
                     customSubProperty: new Decimal(100)
                 }
-            }
+            },
+            logic: []
         }],
         item: [
             {
@@ -48,7 +50,8 @@ export function getUniverseStorage(): UniverseStorage {
                 actor: 1,
                 room: null,
                 cost: new Decimal(10),
-                itemTemplate: 0
+                itemTemplate: 0,
+                logic: []
             },
             {
                 id: 2,
@@ -56,16 +59,18 @@ export function getUniverseStorage(): UniverseStorage {
                 actor: 2,
                 room: null,
                 cost: new Decimal(5),
-                itemTemplate: 0
+                itemTemplate: 0,
+                logic: []
             }
         ],
         room: [{
             id: 1,
             name: 'test room',
-            exits: {}
+            exits: {},
+            logic: []
         }],
-        portal: [],
-        world: [],
+        //portal: [],
+        //world: [],
         itemTemplate: []
     };
 }

@@ -1,11 +1,12 @@
-import { UniverseProxies, UniverseStorage } from "./universe";
+// import { modelNames } from "../models/ModelNames";
+// import { UniverseProxies, UniverseStorage } from "./universe";
 
-export function proxifyUniverse(universe: UniverseStorage): UniverseProxies {
+// export function proxifyUniverse(universe: UniverseStorage): UniverseProxies {
 
-    for (const table of modelNames) {
-        manager.changesets[table] = new Set();
-    }
+//     for (const table of modelNames) {
+//         manager.changesets[table] = new Set();
+//     }
 
-    return manager;   
+//     return manager;   
 
-}
+// }

@@ -14,7 +14,7 @@ const registration = registerLogic({
         destinationRoom: RTTI.modelPointer('room'),
         direction: RTTI.of<Direction>(),
         exit: ExitDefinition,
-        portal: RTTI.modelPointer('portal').optional(),
+        //portal: RTTI.modelPointer('portal').optional(),
     }),
     result: RTTI.of<boolean>(),
     defaultValue: () => true,
