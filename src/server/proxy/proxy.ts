@@ -141,6 +141,11 @@ export function getProxyObject<T extends ModelName>(
                 throw new Error(`Cannot set property ${pathStr} to a non-object`);
             }
 
+            const onChange = modelRegistrations[type].onChanges[key as string];
+            if(onChange) {
+                value = onChange(proxy, value);
+            }
+
             if (def.modelPointerName !== undefined) {
 
                 const existingVal = Reflect.get(target, key, receiver) as number | null | undefined;
@@ -216,7 +221,11 @@ export function getProxyObject<T extends ModelName>(
             const val: any = Reflect.get(target, key, receiver);
 
             if (def && def.modelPointerName !== undefined) {
-                return universe.proxies[def.modelPointerName as ModelName].get(val);
+                const ref = universe.proxies[def.modelPointerName as ModelName].get(val);
+                if(ref) { return ref };
+                if(def.isOptional) { return undefined; }
+                if(def.isNullable) { return null; }
+                throw new Error(`Could not find ${def.modelPointerName}[${val}]`);
             }
 
             if (val instanceof Decimal) {

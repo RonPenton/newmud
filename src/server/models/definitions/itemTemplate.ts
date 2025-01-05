@@ -9,5 +9,6 @@ export const itemTemplateRegistration = registerModel({
     descriptor: RTTI.object({
         ...defaultProperties('item'),
         cost: RTTI.of<Decimal>(),
-    })
+    }),
+    onChanges: {}
 });

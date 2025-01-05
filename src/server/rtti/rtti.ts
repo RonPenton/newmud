@@ -46,7 +46,7 @@ export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     OwnedCollection<any>
 >;
 
-type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
+export type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
 
 export type Optional = { isOptional: true; }
 export type Nullable = { isNullable: true; }

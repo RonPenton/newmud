@@ -36,7 +36,7 @@ export function registerLogic<
     P extends LogicParameters,
     R extends LogicReturn,
 >(
-    registration: LogicRegistration<M, N, P, R>
+    registration: LogicRegistration<M, N, P, R>,
 ) {
     const m = allLogicRegistrations.get(registration.model) ?? new Map();
     m.set(registration.name, registration);

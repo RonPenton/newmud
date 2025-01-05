@@ -20,5 +20,6 @@ export const roomRegistration = registerModel({
         ),
         actors: RTTI.ownedCollection('actor'),
         items: RTTI.ownedCollection('item'),
-    })
+    }),
+    onChanges: {}
 })

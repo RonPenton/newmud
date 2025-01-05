@@ -244,4 +244,30 @@ describe('test', () => {
         expect(storage.actor[1].properties.customProperty2!.customSubProperty!.eq('100.000000000000001')).toBe(true);
     });
 
+    test('proxy executes onchange handlers.', async () => {
+
+        const storage = getUniverseStorage();
+        const manager = new UniverseManager(storage);
+
+        const sword = manager.getRecord('item', 1)!;
+        expect(sword).not.toBeUndefined();
+
+        const room = manager.getRecord('room', 1)!;
+        expect(room).not.toBeUndefined();
+
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
+
+        expect(sword.actor).toBe(actor);
+
+        sword.room = room;
+        expect(sword.room).toBe(room);
+        expect(sword.actor).toBeNull();
+
+        sword.actor = actor;
+        expect(sword.room).toBeNull();
+        expect(sword.actor).toBe(actor);
+    });
+
+
 });
