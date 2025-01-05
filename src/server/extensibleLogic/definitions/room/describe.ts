@@ -1,6 +1,6 @@
 import { RTTI } from "../../../rtti";
 import { UniverseManager } from "../../../universe/universe";
-import { registerLogic } from "../../Logic";
+import { registerLogic, registerLogicDefault } from "../../Logic";
 
 const registration = registerLogic({
     model: 'room',
@@ -11,8 +11,10 @@ const registration = registerLogic({
         observer: RTTI.modelPointer('actor'),
     }),
     result: RTTI.of<string>(),
-    defaultValue: ({ room }) => room.name,
+});
+
+registerLogicDefault(registration, ({ room }) => {
+    return room.name;
 });
 
 declare module "../../Logic" { interface LogicRaw extends InferLogic<typeof registration> { } }
-

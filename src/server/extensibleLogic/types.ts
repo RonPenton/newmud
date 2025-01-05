@@ -3,20 +3,31 @@ import { ProxyType } from "../rtti";
 import { Logic, LogicParameters, LogicRegistration, LogicReturn } from "./Logic";
 
 
-type FunctionType<P extends LogicParameters, R extends LogicReturn> =
+type LogicFunctionType<P extends LogicParameters, R extends LogicReturn> =
+    (params: ProxyType<P>) => ProxyType<R>;
+
+type LogicFunctionImplementation<P extends LogicParameters, R extends LogicReturn> =
     (params: ProxyType<P>, aggregate: ProxyType<R>) => ProxyType<R>;
 
-type FunctionTypeForRegistration<T> = T extends LogicRegistration<any, any, infer P, infer R>
-    ? FunctionType<P, R>
+type LogicFunctionTypeForRegistration<T> = T extends LogicRegistration<any, any, infer P, infer R>
+    ? LogicFunctionType<P, R>
+    : never;
+
+type LogicFunctionImplementationForRegistration<T> = T extends LogicRegistration<any, any, infer P, infer R>
+    ? LogicFunctionImplementation<P, R>
     : never;
 
 export type LogicModelObject<M extends ModelName> = {
-    [K in keyof Logic[M]]: FunctionTypeForRegistration<Logic[M][K]>;
+    [K in keyof Logic[M]]: LogicFunctionTypeForRegistration<Logic[M][K]>;
+}
+
+export type LogicModelImplementation<M extends ModelName> = {
+    [K in keyof Logic[M]]?: LogicFunctionImplementationForRegistration<Logic[M][K]>;
 }
 
 export function makeScript<M extends ModelName>(
     _model: M,
-    obj: Partial<LogicModelObject<M>>
-): Partial<LogicModelObject<M>> {
+    obj: LogicModelImplementation<M>
+): LogicModelImplementation<M> {
     return obj;
 }

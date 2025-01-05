@@ -63,12 +63,58 @@ export function getUniverseStorage(): UniverseStorage {
                 logic: []
             }
         ],
-        room: [{
-            id: 1,
-            name: 'test room',
-            exits: {},
-            logic: []
-        }],
+        room: [
+            {
+                id: 1,
+                name: 'test room',
+                exits: {
+                    'north': {
+                        room: 2
+                    }
+                },
+                logic: []
+            },
+            {
+                id: 2,
+                name: 'test room 2',
+                exits: {
+                    'south': {
+                        room: 1
+                    }
+                },
+                logic: []
+            },
+            {
+                id: 3,
+                name: 'test room 3',
+                exits: {
+                    'west': {
+                        room: 1
+                    }
+                },
+                logic: [{ name: 'blocked' }]
+            },
+            {
+                id: 4,
+                name: 'test room 4',
+                exits: {
+                    'east': {
+                        room: 1
+                    }
+                },
+                logic: [{ name: 'allowPlayerOne' }]
+            },
+            {
+                id: 5,
+                name: 'test room 5',
+                exits: {
+                    'west': {
+                        room: 1
+                    }
+                },
+                logic: [{ name: 'allowPlayerOne' }, { name: 'blocked' }]
+            }
+        ],
         //portal: [],
         //world: [],
         itemTemplate: []

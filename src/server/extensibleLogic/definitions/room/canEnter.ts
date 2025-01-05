@@ -2,7 +2,7 @@ import { ExitDefinition } from "../../../models/definitions/room";
 import { RTTI } from "../../../rtti";
 import { UniverseManager } from "../../../universe/universe";
 import { Direction } from "../../../utils";
-import { registerLogic } from "../../Logic";
+import { registerLogic, registerLogicDefault } from "../../Logic";
 
 const registration = registerLogic({
     model: 'room',
@@ -17,8 +17,9 @@ const registration = registerLogic({
         //portal: RTTI.optional(RTTI.modelPointer('portal')),
     }),
     result: RTTI.of<boolean>(),
-    defaultValue: () => true,
 });
+
+registerLogicDefault(registration, () => true);
 
 declare module "../../Logic" { interface LogicRaw extends InferLogic<typeof registration> { } }
 

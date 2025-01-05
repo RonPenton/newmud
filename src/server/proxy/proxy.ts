@@ -11,8 +11,9 @@ import {
 import { recordFilter, recordMap } from 'tsc-utils';
 import { DbSet, InternalAdd, InternalDelete } from '../db/dbset';
 import Decimal from 'decimal.js';
-import { FullTypeDescriptor, isObject, isOwnedBy, isOwnedCollection, isTwoWayLink, OwnedCollection } from '../rtti';
+import { FullTypeDescriptor, isModelLogic, isObject, isOwnedBy, isOwnedCollection, isTwoWayLink, OwnedCollection } from '../rtti';
 import { ModelName } from '../models/ModelNames';
+import { getLogicProxy } from './logicProxy';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -32,10 +33,11 @@ export function getProxyObject<T extends ModelName>(
     // TODO: Maybe do this on game engine load instead so this isn't done every time
     // a new proxy is built...
     Object.values(setProperties).forEach(def => verifyOwnedSet(type, def));
-
     const dbSets = recordMap(setProperties, def => {
         return new DbSet(def.ownedCollection, type, obj, universe.proxies);
     });
+
+    const logic = getLogicProxy(type, obj);
 
     // add a "linker" function to the global set of linkers that will be executed once
     // all the proxies are created. This has to happen after the proxies are created
@@ -205,6 +207,10 @@ export function getProxyObject<T extends ModelName>(
             const def = getTypedef(typeDef, path);
             if (def && def.ownedCollection && dbSets[key as ModelPlural]) {
                 return dbSets[key as ModelPlural];
+            }
+
+            if(def && def.modelLogic) {
+                return logic;
             }
 
             const val: any = Reflect.get(target, key, receiver);

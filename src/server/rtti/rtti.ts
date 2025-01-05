@@ -1,6 +1,6 @@
 import { ModelName } from "../models/ModelNames";
 import { ModelProxy } from "../models";
-// import { LogicModelObject } from "../extensibleLogic/types";
+import { LogicModelObject } from "../extensibleLogic/types";
 import { DbSet } from "../db/dbset";
 
 export type TypeDescriptor<T, U> = {
@@ -82,6 +82,10 @@ export function isTwoWayLink(obj: any): obj is OwnedBy & ModelPointer<ModelName>
 
 export function isOwnedCollection(obj: any): obj is OwnedCollection<any> {
     return !!obj && obj.ownedCollection !== undefined;
+}
+
+export function isModelLogic(obj: any): obj is ModelLogic<ModelName> {
+    return !!obj && obj.modelLogic !== undefined;
 }
 
 type storageLeaf<D extends TypeDescriptor<any, any>> = StorageType<D>;
@@ -188,7 +192,7 @@ export const RTTI = {
         return {
             modelLogic: model,
             storageDescriptor: (): LogicStorage[] => { throw new Error('not implemented') },
-            proxyDescriptor: (): LogicStorage[] => { throw new Error('not implemented') },
+            proxyDescriptor: (): LogicModelObject<T> => { throw new Error('not implemented') },
             isReadOnly: true
         } as const;
     },
