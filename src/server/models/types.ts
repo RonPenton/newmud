@@ -28,3 +28,7 @@ export type PluralOf<T extends ModelName> = ModelRegistrations[T]['plural'];
 export function modelPlural<T extends ModelName>(name: T): ModelPlural {
     return modelRegistrations[name].plural as ModelPlural;
 }
+
+export type Regarding = {
+    [K in ModelName]?: ModelProxy<K>;
+}

@@ -1,34 +1,29 @@
 import Decimal from "decimal.js";
 import { keysOf } from "tsc-utils";
+import { StatRegistration } from "./Stats";
+import { caps } from "./softcap";
 
-type Stat = {
+export type StatStorage = {
     base?: Decimal;
     max?: Decimal;
     min?: Decimal;
+    softcapScale?: Decimal;
     [key: `percentTier${number}`]: Decimal;
     percentCompounding?: Decimal;
 }
 
-type StatCoalesced = Omit<Stat, 'percentCompounding'> & {
+export type StatCoalesced = Omit<StatStorage, 'percentCompounding'> & {
     percentCompounding: Decimal[];
 }
 
-const hps: Stat[] = [
-    { base: new Decimal(10) },
-    { percentTier0: new Decimal(10) },
-    { percentTier0: new Decimal(3) },
-    { percentTier1: new Decimal(5) },
-    { base: new Decimal(5) },
-    { percentTier1: new Decimal(1), base: new Decimal(1) },
-    { percentCompounding: new Decimal(10) },
-    { percentCompounding: new Decimal(5) },
-    { percentCompounding: new Decimal(1) },
-    { percentCompounding: new Decimal(-50) },
-]
+export function coalesceStats(stats: StatStorage[], registration: StatRegistration<any>): StatCoalesced {
 
-function coalesceStats(stats: Stat[]): StatCoalesced {
+    const { max, min, softcapScale } = registration;
     const result: StatCoalesced = {
-        percentCompounding: []
+        percentCompounding: [],
+        max,
+        min,
+        softcapScale
     };
     for (const stat of stats) {
         for (const key of keysOf(stat)) {
@@ -49,11 +44,7 @@ function coalesceStats(stats: Stat[]): StatCoalesced {
     return result;
 }
 
-const c = coalesceStats(hps);
-console.log(c);
-
-
-function computeStat(stat: StatCoalesced): Decimal {
+export function computeStat(stat: StatCoalesced, registration: StatRegistration<any>): Decimal {
     let result = new Decimal(0);
     if (stat.base) {
         result = result.add(stat.base);
@@ -69,7 +60,33 @@ function computeStat(stat: StatCoalesced): Decimal {
         result = result.mul(p.div(100).add(1));
     }
 
+    // apply the max cap.
+    result = caps[registration.capType](result, stat.max, stat.softcapScale);
+
+    // apply the min cap.
+    const min = stat.min ?? new Decimal(-Infinity);
+    if (result.lt(min)) {
+        result = min;
+    }
+
     return result;
 }
 
-console.log(computeStat(c));
+// const hps: Stat[] = [
+//     { base: new Decimal(10), max: new Decimal(20), min: new Decimal(0) },
+//     { percentTier0: new Decimal(10) },
+//     { percentTier0: new Decimal(3) },
+//     { percentTier1: new Decimal(5) },
+//     { base: new Decimal(5) },
+//     { percentTier1: new Decimal(1), base: new Decimal(1) },
+//     { percentCompounding: new Decimal(10) },
+//     { percentCompounding: new Decimal(5) },
+//     //{ percentCompounding: new Decimal(-50) },
+//     { percentCompounding: new Decimal(1) },
+//     { base: new Decimal(-100)}
+// ]
+
+// const c = coalesceStats(hps);
+// console.log(c);
+
+// console.log(computeStat(c));
