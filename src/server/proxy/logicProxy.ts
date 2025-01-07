@@ -1,12 +1,15 @@
-import { ModelStorage } from '../models';
+import { ModelProxy, ModelStorage } from '../models';
 import { LogicModelObject } from '../extensibleLogic/types';
 import { allLogicRegistrations, logicDefaults } from '../extensibleLogic/Logic';
 import { getModelScript } from '../scriptEngine/loadScript';
 import { ModelName } from '../models/ModelNames';
+import { UniverseManager } from '../universe/universe';
 
 export function getLogicProxy<T extends ModelName>(
     type: T,
-    obj: ModelStorage<ModelName>
+    universe: UniverseManager,
+    obj: ModelStorage<T>,
+    modelProxy: ModelProxy<T>
 ): LogicModelObject<T> {
 
     const proxy = new Proxy<LogicModelObject<T>>(obj as any, {
@@ -24,9 +27,14 @@ export function getLogicProxy<T extends ModelName>(
 
             const scripts = obj.logic.map(l => getModelScript(type, l.name));
             return (args: any) => {
+                args = {
+                    ...args,
+                    universe,
+                    [type]: modelProxy
+                }
                 let d = defaultValue(args);
-                for(const script of scripts) {
-                    if(key in script) {
+                for (const script of scripts) {
+                    if (key in script) {
                         d = (script as any)[key](args, d);
                     }
                 }

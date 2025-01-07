@@ -1,9 +1,10 @@
 import { ModelName } from "../models/ModelNames";
-import { ProxyType, TypeDescriptor } from "../rtti";
+import { IsObject, ProxyType, TypeDescriptor } from "../rtti";
+import { LogicDefaultParamters } from "./types";
 
 export interface LogicRaw { }
 
-export type LogicParameters = TypeDescriptor<any, any>;
+export type LogicParameters = TypeDescriptor<any, any> & IsObject;
 export type LogicReturn = TypeDescriptor<any, any>;
 
 export type LogicRegistration<
@@ -19,16 +20,17 @@ export type LogicRegistration<
 };
 
 export type DefaultLogicFunction<
+    M extends ModelName,
     P extends TypeDescriptor<any, any>,
     R extends TypeDescriptor<any, any>
-> = (params: ProxyType<P>) => ProxyType<R>;
+> = (params: ProxyType<P> & LogicDefaultParamters<M>) => ProxyType<R>;
 
 export type InferLogic<T extends LogicRegistration<any, any, any, any>> = {
     [K in T['name']as `${T['model']}_${T['name']}`]: T;
 };
 
 export const allLogicRegistrations: Map<ModelName, Map<string, LogicRegistration<any, any, any, any>>> = new Map();
-export const logicDefaults: Map<ModelName, Map<string, DefaultLogicFunction<any, any>>> = new Map();
+export const logicDefaults: Map<ModelName, Map<string, DefaultLogicFunction<any, any, any>>> = new Map();
 
 export function registerLogic<
     M extends ModelName,
@@ -41,7 +43,6 @@ export function registerLogic<
     const m = allLogicRegistrations.get(registration.model) ?? new Map();
     m.set(registration.name, registration);
     allLogicRegistrations.set(registration.model, m);
-
     return registration;
 };
 
@@ -52,7 +53,7 @@ export function registerLogicDefault<
     R extends LogicReturn,
 >(
     registration: LogicRegistration<M, N, P, R>,
-    defaultValue: DefaultLogicFunction<P, R>
+    defaultValue: DefaultLogicFunction<M, P, R>
 ) {
     const m = logicDefaults.get(registration.model) ?? new Map();
     m.set(registration.name, defaultValue);

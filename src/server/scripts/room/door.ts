@@ -1,9 +1,9 @@
 import { makeScript } from "../../extensibleLogic/types";
 
 const script = makeScript('room', {
-    // canEnter: (_params, aggregate) => {
-    //     return aggregate && true;
-    // }
+    canEnter: () => {
+        return true;
+    }
 });
 
 export { script };

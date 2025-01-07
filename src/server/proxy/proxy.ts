@@ -37,8 +37,6 @@ export function getProxyObject<T extends ModelName>(
         return new DbSet(def.ownedCollection, type, obj, universe.proxies);
     });
 
-    const logic = getLogicProxy(type, obj);
-
     // add a "linker" function to the global set of linkers that will be executed once
     // all the proxies are created. This has to happen after the proxies are created
     // because I didn't want to create a dependency resolver mechanism, and also someday
@@ -240,6 +238,8 @@ export function getProxyObject<T extends ModelName>(
             }
         }
     });
+
+    const logic = getLogicProxy(type, universe, obj, proxy);
 
     return proxy;
 }

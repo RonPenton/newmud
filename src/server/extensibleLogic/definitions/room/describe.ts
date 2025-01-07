@@ -1,12 +1,10 @@
 import { RTTI } from "../../../rtti";
-import { UniverseManager } from "../../../universe/universe";
 import { registerLogic, registerLogicDefault } from "../../Logic";
 
 const registration = registerLogic({
     model: 'room',
     name: 'describe',
     parameters: RTTI.object({
-        universe: RTTI.of<UniverseManager>(),
         room: RTTI.modelPointer('room'),
         observer: RTTI.modelPointer('actor'),
     }),
