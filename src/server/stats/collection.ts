@@ -7,9 +7,12 @@ export type StatCollectionComputed = {
 }
 
 export type StatCollectionStorage = {
-    readonly [K in StatName]?: StatStorage;
+    readonly [K in StatName]?: StatStorage[];
 }
 
+export type BaseStat = Iterable<StatStorage> & {
+    add(stat: StatStorage): void;
+}
 export type StatCollectionProxy = {
-    readonly [K in StatName]: Required<StatStorage>;
+    readonly [K in StatName]: BaseStat;
 }
