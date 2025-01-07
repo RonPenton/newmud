@@ -20,7 +20,8 @@ export function getUniverseStorage(): UniverseStorage {
             properties: {
 
             },
-            logic: []
+            logic: [],
+            baseStats: {}
         },
         {
             id: 2,
@@ -41,7 +42,8 @@ export function getUniverseStorage(): UniverseStorage {
                     customSubProperty: new Decimal(100)
                 }
             },
-            logic: []
+            logic: [],
+            baseStats: {}
         }],
         item: [
             {
@@ -51,7 +53,8 @@ export function getUniverseStorage(): UniverseStorage {
                 room: null,
                 cost: new Decimal(10),
                 itemTemplate: 0,
-                logic: []
+                logic: [],
+                baseStats: {}
             },
             {
                 id: 2,
@@ -60,7 +63,8 @@ export function getUniverseStorage(): UniverseStorage {
                 room: null,
                 cost: new Decimal(5),
                 itemTemplate: 0,
-                logic: []
+                logic: [],
+                baseStats: {}
             }
         ],
         room: [
@@ -72,7 +76,9 @@ export function getUniverseStorage(): UniverseStorage {
                         room: 2
                     }
                 },
-                logic: []
+                logic: [],
+                area: 1,
+                baseStats: {}
             },
             {
                 id: 2,
@@ -82,7 +88,9 @@ export function getUniverseStorage(): UniverseStorage {
                         room: 1
                     }
                 },
-                logic: []
+                logic: [],
+                area: 1,
+                baseStats: {}
             },
             {
                 id: 3,
@@ -92,7 +100,9 @@ export function getUniverseStorage(): UniverseStorage {
                         room: 1
                     }
                 },
-                logic: [{ name: 'blocked' }]
+                logic: [{ name: 'blocked' }],
+                area: 1,
+                baseStats: {}
             },
             {
                 id: 4,
@@ -102,7 +112,9 @@ export function getUniverseStorage(): UniverseStorage {
                         room: 1
                     }
                 },
-                logic: [{ name: 'allowPlayerOne' }]
+                logic: [{ name: 'allowPlayerOne' }],
+                area: 1,
+                baseStats: {}
             },
             {
                 id: 5,
@@ -112,11 +124,32 @@ export function getUniverseStorage(): UniverseStorage {
                         room: 1
                     }
                 },
-                logic: [{ name: 'allowPlayerOne' }, { name: 'blocked' }]
+                logic: [{ name: 'allowPlayerOne' }, { name: 'blocked' }],
+                area: 1,
+                baseStats: {}
             }
         ],
         //portal: [],
-        //world: [],
+        world: [{
+            id: 1,
+            name: 'the world',
+            logic: [],
+            baseStats: {}
+        }],
+        region: [{
+            id: 1,
+            name: 'test region',
+            world: 1,
+            logic: [],
+            baseStats: {}
+        }],
+        area: [{
+            id: 1,
+            name: 'test area',
+            region: 1,
+            logic: [],
+            baseStats: {}
+        }],
         itemTemplate: []
     };
 }

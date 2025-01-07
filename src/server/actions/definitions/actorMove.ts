@@ -36,7 +36,6 @@ const registration = registerAction({
     }
 });
 
-
 declare module "../Actions" {
     interface ActionRegistrations extends InferAction<typeof registration> { }
 }

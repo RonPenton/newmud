@@ -1,7 +1,6 @@
 import Decimal from "decimal.js";
 import { CapType } from "./softcap";
 import fs from 'fs';
-import { StatStorage } from "./types";
 
 export interface StatRegistrations {
 
@@ -14,6 +13,7 @@ export type StatRegistration<N extends string> = {
     min?: Decimal;
     softcapScale?: Decimal;
     capType: CapType;
+    rounding?: (val: Decimal) => Decimal;
 }
 
 export type Stats = {
@@ -35,8 +35,12 @@ export function registerStat<N extends string>(
     return registration;
 }
 
-export function getStatRegistration(name: string): StatRegistration<any> | undefined {
-    return statRegistrations[name];
+export function getStatRegistration(name: string): StatRegistration<any> {
+    const val = statRegistrations[name];
+    if(!val) {
+        throw new Error(`Stat '${name}' not found`);
+    }
+    return val;
 }
 
 export async function loadStatDefinitions() {

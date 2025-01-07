@@ -6,7 +6,8 @@ const registration = registerStat({
     description: 'The ability of a character to percieve visual things',
     max: new Decimal(100),
     min: new Decimal(0),
-    capType: 'log2'
+    capType: 'log2',
+    rounding: val => val.floor()
 });
 
 declare module "../Stats" { interface StatRegistrations extends InferStat<typeof registration> { } }

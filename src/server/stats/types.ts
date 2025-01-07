@@ -71,22 +71,3 @@ export function computeStat(stat: StatCoalesced, registration: StatRegistration<
 
     return result;
 }
-
-// const hps: Stat[] = [
-//     { base: new Decimal(10), max: new Decimal(20), min: new Decimal(0) },
-//     { percentTier0: new Decimal(10) },
-//     { percentTier0: new Decimal(3) },
-//     { percentTier1: new Decimal(5) },
-//     { base: new Decimal(5) },
-//     { percentTier1: new Decimal(1), base: new Decimal(1) },
-//     { percentCompounding: new Decimal(10) },
-//     { percentCompounding: new Decimal(5) },
-//     //{ percentCompounding: new Decimal(-50) },
-//     { percentCompounding: new Decimal(1) },
-//     { base: new Decimal(-100)}
-// ]
-
-// const c = coalesceStats(hps);
-// console.log(c);
-
-// console.log(computeStat(c));

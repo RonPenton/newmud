@@ -5,6 +5,8 @@ export function defaultProperties<M extends ModelName>(m: M) {
     return {
         id: RTTI.id(),
         name: RTTI.of<string>(),
-        logic: RTTI.logic(m)
+        logic: RTTI.logic(m),
+        baseStats: RTTI.statCollectionStorage(),
+        stats: RTTI.statComputation()
     }
 }

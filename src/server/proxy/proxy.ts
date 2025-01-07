@@ -11,9 +11,11 @@ import {
 import { recordFilter, recordMap } from 'tsc-utils';
 import { DbSet, InternalAdd, InternalDelete } from '../db/dbset';
 import Decimal from 'decimal.js';
-import { FullTypeDescriptor, isModelLogic, isObject, isOwnedBy, isOwnedCollection, isTwoWayLink, OwnedCollection } from '../rtti';
+import { FullTypeDescriptor, isObject, isOwnedBy, isOwnedCollection, isStatCollectionStorage, isTwoWayLink, OwnedCollection } from '../rtti';
 import { ModelName } from '../models/ModelNames';
 import { getLogicProxy } from './logicProxy';
+import { getStatStorageProxy } from './statStorageProxy';
+import { getStatComputationProxy } from './statComputationProxy';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -27,7 +29,7 @@ export function getProxyObject<T extends ModelName>(
         throw new Error(`Invalid type descriptor for ${type}, must be object.`);
     }
 
-    const setProperties = recordFilter(typeDef.object, def => isOwnedCollection(def));
+    const setProperties = recordFilter(typeDef.object, isOwnedCollection);
 
     // a bit of sanity checking to make sure that the reverse links are set up correctly.
     // TODO: Maybe do this on game engine load instead so this isn't done every time
@@ -35,6 +37,11 @@ export function getProxyObject<T extends ModelName>(
     Object.values(setProperties).forEach(def => verifyOwnedSet(type, def));
     const dbSets = recordMap(setProperties, def => {
         return new DbSet(def.ownedCollection, type, obj, universe.proxies);
+    });
+
+    const statProperties = recordFilter(typeDef.object, isStatCollectionStorage);
+    const statProxies = recordMap(statProperties, (_def, key) => {
+        getStatStorageProxy(obj[key as keyof typeof obj] as any);
     });
 
     // add a "linker" function to the global set of linkers that will be executed once
@@ -216,6 +223,13 @@ export function getProxyObject<T extends ModelName>(
                 return logic;
             }
 
+            if(def && def.statCollectionStorage) {
+                return statProxies[key as keyof typeof statProxies];
+            }
+            if(def && def.statComputation) {
+                return statComputer;
+            }
+
             const val: any = Reflect.get(target, key, receiver);
 
             if (def && def.modelPointerName !== undefined) {
@@ -240,6 +254,7 @@ export function getProxyObject<T extends ModelName>(
     });
 
     const logic = getLogicProxy(type, universe, obj, proxy);
+    const statComputer = getStatComputationProxy(type, proxy);
 
     return proxy;
 }

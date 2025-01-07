@@ -4,7 +4,10 @@ export const modelNames = [
     'actor',
     'room',
     'itemTemplate',
-    'item'
+    'item',
+    'world',
+    'region',
+    'area'
 ] as const;
 
 export type ModelName = typeof modelNames[number];

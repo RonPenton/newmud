@@ -1,6 +1,5 @@
 import { IsObject, ObjectDescriptor, ProxyType, TypeDescriptor } from "../rtti";
 import { ModelName } from "./ModelNames";
-import { ModelProxy } from "./types";
 
 export type ModelRegistration<
     T extends TypeDescriptor<any, any> & IsObject,

@@ -1,22 +1,15 @@
-// import { RTTI } from "../../rtti";
-// import { registerModelName } from "../ModelNames";
-// import { registerModel } from "../Models";
+import { RTTI } from "../../rtti";
+import { registerModel } from "../Models";
+import { defaultProperties } from "./default";
 
-// const name = registerModelName(
-//     {
-//         name: 'world',
-//         plural: 'worlds',
-//     }
-// );
 
-// const registration = registerModel({
-//     ...name,
-//     descriptor: {
-//         id: RTTI.id(),
-//         name: RTTI.of<string>(),
-//         time: RTTI.of<number>(),
-//     }
-// });
+export const worldRegistration = registerModel({
+    name: 'world',
+    plural: 'worlds',
+    descriptor: RTTI.object({
+        ...defaultProperties('world'),
+        regions: RTTI.ownedCollection('region'),
+    }),
+    onChanges: {}
+});
 
-// declare module "../ModelNames" { interface ModelNames extends InferModelName<typeof name> { } }
-// declare module "../Models" { interface Models extends InferModel<typeof registration> { } }

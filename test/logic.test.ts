@@ -7,6 +7,7 @@ import { loadModelFiles } from "../src/server/models";
 import { loadLogicDefinitions } from "../src/server/extensibleLogic/load";
 
 import { getModelScript } from "../src/server/scriptEngine/loadScript";
+import { makeScript } from "../src/server/extensibleLogic/types";
 
 // mock getModelScript
 jest.mock('../src/server/scriptEngine/loadScript');
@@ -15,14 +16,14 @@ const mockedGetModelScript = getModelScript as jest.Mock;
 mockedGetModelScript.mockImplementation((type: string, name: string) => {
 
     if (type == 'room' && name == 'blocked') {
-        return {
-            canEnter: (_: any, aggregate: boolean) => aggregate && false
-        };
+        return makeScript('room', {
+            canEnter: (_, aggregate) => aggregate && false
+        });
     }
     if (type == 'room' && name == 'allowPlayerOne') {
-        return {
-            canEnter: ({ actor }: any, aggregate: boolean) => aggregate && actor.id == 1
-        };
+        return makeScript('room', {
+            canEnter: ({ actor }, aggregate) => aggregate && actor.id == 1
+        });
     }
 
     return null;
@@ -53,7 +54,6 @@ describe('test', () => {
         expect(actor).not.toBeUndefined();
 
         const succeed = room2.logic.canEnter({
-            universe: manager,
             actor: manager.getRecord('actor', 1)!,
             startingRoom: room1,
             destinationRoom: room2,
@@ -78,7 +78,6 @@ describe('test', () => {
         expect(actor).not.toBeUndefined();
 
         const succeed = room3.logic.canEnter({
-            universe: manager,
             actor: manager.getRecord('actor', 1)!,
             startingRoom: room1,
             destinationRoom: room3,
@@ -106,7 +105,6 @@ describe('test', () => {
         expect(actor2).not.toBeUndefined();
 
         const first = room4.logic.canEnter({
-            universe: manager,
             actor: actor,
             startingRoom: room1,
             destinationRoom: room4,
@@ -117,7 +115,6 @@ describe('test', () => {
         expect(first).toBe(true);
 
         const second = room4.logic.canEnter({
-            universe: manager,
             actor: actor2,
             startingRoom: room1,
             destinationRoom: room4,
@@ -142,7 +139,6 @@ describe('test', () => {
         expect(actor).not.toBeUndefined();
 
         const first = room5.logic.canEnter({
-            universe: manager,
             actor: actor,
             startingRoom: room1,
             destinationRoom: room5,

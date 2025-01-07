@@ -2,6 +2,7 @@ import { ModelName } from "../models/ModelNames";
 import { ModelProxy } from "../models";
 import { LogicModelObject } from "../extensibleLogic/types";
 import { DbSet } from "../db/dbset";
+import { StatCollectionComputed, StatCollectionProxy, StatCollectionStorage } from "../stats/collection";
 
 export type TypeDescriptor<T, U> = {
     storageDescriptor: () => T;
@@ -19,7 +20,7 @@ export type flatten<T> = T extends Record<string, any> ? identity<{ [k in keyof 
 
 export type optionalKeys<T extends object> = { [k in keyof T]: T[k] extends Optional ? k : never; }[keyof T];
 export type requiredKeys<T extends Record<string, TypeDescriptor<any, any>>> = {
-    [k in keyof T]: T[k] extends Optional ? never : StorageType<T[k]> extends never ? never : k; 
+    [k in keyof T]: T[k] extends Optional ? never : StorageType<T[k]> extends never ? never : k;
 }[keyof T];
 
 export type optionalReadOnlyKeys<T extends object> = {
@@ -43,7 +44,9 @@ export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     IsObject &
     IsProperties &
     ModelLogic<any> &
-    OwnedCollection<any>
+    OwnedCollection<any> &
+    IsStatCollectionStorage & 
+    IsStatComputation
 >;
 
 export type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
@@ -58,6 +61,8 @@ export type TemplatedFrom = { templatedFrom: true; }
 export type IsObject = { object: ObjectDescriptor; }
 export type IsProperties = { properties: true; }
 export type OwnedCollection<T extends ModelName> = { ownedCollection: T; }
+export type IsStatCollectionStorage = { statCollectionStorage: true; }
+export type IsStatComputation = { statComputation: true; }
 
 export type LogicStorage = {
     name: string;
@@ -86,6 +91,10 @@ export function isOwnedCollection(obj: any): obj is OwnedCollection<any> {
 
 export function isModelLogic(obj: any): obj is ModelLogic<ModelName> {
     return !!obj && obj.modelLogic !== undefined;
+}
+
+export function isStatCollectionStorage(obj: any): obj is IsStatCollectionStorage {
+    return !!obj && obj.statCollectionStorage !== undefined;
 }
 
 type storageLeaf<D extends TypeDescriptor<any, any>> = StorageType<D>;
@@ -238,6 +247,24 @@ export const RTTI = {
             isReadOnly: true,
             storageDescriptor: (): never => { throw new Error('not implemented') },
             proxyDescriptor: (): DbSet<T> => { throw new Error('not implemented') },
+        } as const;
+    },
+
+    statCollectionStorage: () => { 
+        return {
+            storageDescriptor: (): StatCollectionStorage => { throw new Error('not implemented') },
+            proxyDescriptor: (): StatCollectionProxy => { throw new Error('not implemented') },
+            statCollectionStorage: true,
+            isReadOnly: true
+        } as const;
+    },
+
+    statComputation: () => {
+        return {
+            storageDescriptor: (): never => { throw new Error('not implemented') },
+            proxyDescriptor: (): StatCollectionComputed => { throw new Error('not implemented') },
+            statComputation: true,
+            isReadOnly: true
         } as const;
     }
 }

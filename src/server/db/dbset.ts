@@ -18,9 +18,9 @@ export class DbSet<T extends ModelName> {
     ) { }
 
     private getChecked(id: number) {
-        console.log(`getting ${this.table}[${id}]`);
-        console.log(this.proxies);
-        console.log(this.proxies[this.table]);
+        // console.log(`getting ${this.table}[${id}]`);
+        // console.log(this.proxies);
+        // console.log(this.proxies[this.table]);
         const item = this.proxies[this.table].get(id);
         if (!item) {
             throw new Error(`Item with id ${id} not found in ${modelPlural(this.table)}.`);
@@ -33,15 +33,15 @@ export class DbSet<T extends ModelName> {
      */
     public [InternalAdd](value: ModelProxy<T> | number): this {
         if (typeof value === 'number') {
-            console.log(`${this} adding ${this.table}[${value}] {number}`);
+            //console.log(`${this} adding ${this.table}[${value}] {number}`);
             this._set.add(value);
         }
         else {
-            console.log(`${this} adding ${this.table}[${value.id}] {Proxy}`);
+            //console.log(`${this} adding ${this.table}[${value.id}] {Proxy}`);
             this._set.add(value.id);
         }
 
-        console.log(`${this}`);
+        //console.log(`${this}`);
 
         return this;
     }
@@ -63,10 +63,10 @@ export class DbSet<T extends ModelName> {
      */
     public [InternalDelete](value: ModelProxy<T> | number): boolean {
         if (typeof value === 'number') {
-            console.log(`${this} deleting ${this.table}[${value}] {number}`);
+            //console.log(`${this} deleting ${this.table}[${value}] {number}`);
             return this._set.delete(value);
         }
-        console.log(`${this} deleting ${this.table}[${value.id}] {Proxy}`);
+        //console.log(`${this} deleting ${this.table}[${value.id}] {Proxy}`);
         return this._set.delete(value.id);
     }
 
