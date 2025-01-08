@@ -102,11 +102,39 @@ export class DbSet<T extends ModelName> {
         return mapIterable(this.values(), mapper);
     }
 
+    public flatMap<U>(mapper: (value: ModelProxy<T>, index: number) => Iterable<U>) {
+        return flatMapIterable(this.values(), mapper);
+    }
+
+    public find<S extends ModelProxy<T>>(predicate: (value: ModelProxy<T>, index: number) => value is S) {
+        for(const x of this.values()) {
+            if(predicate(x, 0)) {
+                return x;
+            }
+        }
+
+        return undefined;
+    }
+
     public values() {
         return mapIterable(this._set.values(), id => this.getChecked(id));
     }
 
     public ids() {
         return this._set.keys();
+    }
+}
+
+export function* flatMapIterable<T, U>(iterable: IterableIterator<T>, mapper: (value: T, index: number) => Iterable<U>) {
+    let next = iterable.next();
+    let idx = 0;
+
+    while (!next.done) {
+        const val = mapper(next.value, idx);
+        for (const v of val) {
+            yield v;
+        }
+        idx++;
+        next = iterable.next();
     }
 }

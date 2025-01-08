@@ -1,6 +1,6 @@
-import { registerComputeStat } from "../base/computeStat";
+import { registerCollectStats } from "../base/collectStats";
 
-const registration = registerComputeStat('actor');
+const registration = registerCollectStats('actor');
 
 declare module "../../Logic" { interface LogicRaw extends InferLogic<typeof registration> { } }
 

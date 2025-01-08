@@ -5,18 +5,18 @@ import { StatStorage } from "../../../stats/types";
 import { RegardingModel } from "../../../models";
 import { ModelName } from "../../../models/ModelNames";
 
-export function registerComputeStat<M extends ModelName>(model: M) {
+export function registerCollectStats<M extends ModelName>(model: M) {
     const registration = registerLogic({
         model,
-        name: 'computeStat',
+        name: 'collectStats',
         parameters: RTTI.object({
             stat: RTTI.of<StatName>(),
             regarding: RTTI.of<RegardingModel>()
         }),
-        result: RTTI.nullable(RTTI.of<StatStorage>()),
+        result: RTTI.of<StatStorage[]>(),
     });
 
-    registerLogicDefault(registration, () => null);
+    registerLogicDefault(registration, () => []);
     return registration;
 }
 

@@ -2,7 +2,7 @@ import { StatCollectionComputed } from '../stats/collection';
 import DeepProxy from 'proxy-deep';
 import { ModelName } from '../models/ModelNames';
 import { ModelProxy } from '../models';
-import { statComputations } from '../stats/computations';
+import { statComputations } from '../stats/collectors';
 
 export function getStatComputationProxy<M extends ModelName>(
     type: M,
