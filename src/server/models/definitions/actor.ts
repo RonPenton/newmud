@@ -28,6 +28,7 @@ export const actorRegistration = registerModel({
         }),
         properties: RTTI.properties<ActorProperties>(),
         items: RTTI.ownedCollection('item'),
+
     }),
     onChanges: {}
 });

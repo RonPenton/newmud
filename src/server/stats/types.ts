@@ -2,6 +2,9 @@ import Decimal from "decimal.js";
 import { keysOf } from "tsc-utils";
 import { StatRegistration } from "./Stats";
 import { caps } from "./softcap";
+import { ModelProxy, ModelRegistrations } from "../models";
+import { identity, IsObject, IsStatCollectionStorage, ObjectDescriptor } from "../rtti";
+import { ModelName } from "../models/ModelNames";
 
 export type StatType = 'base' | 'max' | 'min' | 'softcapScale' | `percentTier${number}` | 'percentCompounding';
 
@@ -36,7 +39,7 @@ export function coalesceStats(stats: StatStorage[], registration: StatRegistrati
         }
     }
 
-    if(coalesced.percentCompounding) {
+    if (coalesced.percentCompounding) {
         coalesced.percentCompounding = coalesced.percentCompounding.sub(1).mul(100);
     }
 
@@ -84,9 +87,9 @@ export function condenseStats(stats: StatStorage[]): StatStorage[] {
     const condensed: StatStorage[] = [];
 
     const clone = stats.slice();
-    while(clone.length > 0) {
+    while (clone.length > 0) {
         const val = clone.shift()!;
-        if(val.explain || val.type == 'percentCompounding') {
+        if (val.explain || val.type == 'percentCompounding') {
             condensed.push(val);
         }
         else {
@@ -101,4 +104,38 @@ export function condenseStats(stats: StatStorage[]): StatStorage[] {
     }
 
     return condensed;
+}
+
+type RemoveEmpty<T> = { [K in keyof T as {} extends T[K] ? never : K]: T[K]; }
+
+type RemoveNever<T> = identity<{ [K in keyof T as T[K] extends never ? never : K]: T[K]; }>;
+
+/**
+ * Helper type to extract the "Descriptor" property for a model.
+ */
+type D<T extends ModelName> = ModelRegistrations[T]['descriptor'];
+
+/**
+ * Helper type to extract all "stat collection Storage" properties from an object descriptor.
+ */
+type S<T extends ObjectDescriptor> = RemoveNever<{
+    [K in keyof T]: T[K] extends IsStatCollectionStorage ? T[K] : never
+}>;
+
+/**
+ * Type to extract all models that have a stat collection storage property, along
+ * with the properties themselves so that we can look up the property names.
+ */
+type StatModels = RemoveEmpty<{
+    [K in ModelName]: D<K> extends IsObject ? S<D<K>['object']> : never
+}>;
+
+/**
+ * A type that allows us to narrow in on a specific model and collection of stats. 
+ */
+export type RegardingStats = {
+    [K in keyof StatModels]?: {
+        record: ModelProxy<K>;
+        collection: keyof StatModels[K];
+    }
 }

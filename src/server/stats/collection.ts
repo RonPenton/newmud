@@ -1,13 +1,12 @@
-import Decimal from "decimal.js";
+//import Decimal from "decimal.js";
 import { StatName } from "./Stats";
-import { StatStorage } from "./types";
-import { RegardingModel } from "../models";
+import { RegardingStats, StatStorage } from "./types";
 
-export type StatCollectionComputed = {
-    readonly [K in StatName]: Decimal & {
-        collect(regarding: RegardingModel): StatStorage[]
-    };
-}
+// export type StatCollectionComputed = {
+//     readonly [K in StatName]: Decimal & {
+//         collect(regarding: RegardingStats): StatStorage[]
+//     };
+// }
 
 export type StatCollectionStorage = {
     readonly [K in StatName]?: StatStorage[];
@@ -15,6 +14,7 @@ export type StatCollectionStorage = {
 
 export type BaseStat = Iterable<StatStorage> & {
     add(stat: StatStorage): void;
+    collect(regarding: RegardingStats): StatStorage[];
 }
 
 export type StatCollectionProxy = {

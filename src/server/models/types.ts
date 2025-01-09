@@ -35,6 +35,6 @@ export function modelPlural<T extends ModelName>(name: T): ModelPlural {
     return modelRegistrations[name].plural as ModelPlural;
 }
 
-export type RegardingModel = {
-    [K in ModelName]?: ModelProxy<K>;
-}
+// export type RegardingModel = {
+//     [K in ModelName]?: ModelProxy<K>;
+// }

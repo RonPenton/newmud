@@ -54,7 +54,8 @@ export function getUniverseStorage(): UniverseStorage {
                 cost: new Decimal(10),
                 itemTemplate: 0,
                 logic: [],
-                baseStats: {}
+                baseStats: {},
+                equippedStats: {}
             },
             {
                 id: 2,
@@ -64,7 +65,8 @@ export function getUniverseStorage(): UniverseStorage {
                 cost: new Decimal(5),
                 itemTemplate: 0,
                 logic: [],
-                baseStats: {}
+                baseStats: {},
+                equippedStats: {}
             }
         ],
         room: [
