@@ -1,4 +1,4 @@
-import { filterIterable, mapIterable } from "tsc-utils";
+import { filterIterable, flatMapIterable, mapIterable } from "tsc-utils";
 import { ModelName } from "../models/ModelNames";
 import { modelPlural, ModelProxy, ModelStorage } from "../models";
 import { UniverseProxies } from "../universe/universe";
@@ -122,19 +122,5 @@ export class DbSet<T extends ModelName> {
 
     public ids() {
         return this._set.keys();
-    }
-}
-
-export function* flatMapIterable<T, U>(iterable: IterableIterator<T>, mapper: (value: T, index: number) => Iterable<U>) {
-    let next = iterable.next();
-    let idx = 0;
-
-    while (!next.done) {
-        const val = mapper(next.value, idx);
-        for (const v of val) {
-            yield v;
-        }
-        idx++;
-        next = iterable.next();
     }
 }

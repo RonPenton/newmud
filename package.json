@@ -109,7 +109,7 @@
         "socket.io-client": "^4.8.1",
         "ts-dotenv-parser": "^1.1.0",
         "ts-priority-queue": "^0.1.1",
-        "tsc-utils": "^3.3.1",
+        "tsc-utils": "^3.4.0",
         "zod": "^3.24.1"
     }
 }

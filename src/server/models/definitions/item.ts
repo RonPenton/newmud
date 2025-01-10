@@ -9,7 +9,8 @@ export const itemRegistration = registerModel({
         ...itemTemplateRegistration.descriptor.object,
         room: RTTI.nullable(RTTI.ownedBy('room')),
         actor: RTTI.nullable(RTTI.ownedBy('actor')),
-        itemTemplate: RTTI.templatedFrom('itemTemplate')
+        itemTemplate: RTTI.templatedFrom('itemTemplate'),
+        stats: RTTI.statComputation('actor')
     }),
     onChanges: {
         room: (item, room) => {

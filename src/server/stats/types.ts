@@ -1,22 +1,26 @@
 import Decimal from "decimal.js";
-import { keysOf } from "tsc-utils";
+import { groupBy, keysOf, mapMap } from "tsc-utils";
 import { StatRegistration } from "./Stats";
-import { caps } from "./softcap";
 import { ModelProxy, ModelRegistrations } from "../models";
 import { identity, IsObject, IsStatCollectionStorage, ObjectDescriptor } from "../rtti";
 import { ModelName } from "../models/ModelNames";
+import { caps } from "./softcap";
 
 export type StatType = 'base' | 'max' | 'min' | 'softcapScale' | `percentTier${number}` | 'percentCompounding';
+
+export type StatScope = ModelName | `${ModelName}-base`;
 
 export type StatStorage = {
     type: StatType;
     value: Decimal;
+    scope: StatScope;
     explain?: string;
 }
 
 export type StatCoalesced = Partial<Record<StatType, Decimal>>;
 
-export function coalesceStats(stats: StatStorage[], registration: StatRegistration<any>): StatCoalesced {
+
+export function coalesceStats(stats: StatStorage[], registration: StatRegistration<any, any>) {
     const coalesced: StatCoalesced = {
         min: registration.min,
         max: registration.max,
@@ -46,25 +50,35 @@ export function coalesceStats(stats: StatStorage[], registration: StatRegistrati
     return coalesced;
 }
 
+export type StatComputation = {
+    value: Decimal;
+    appliedStats: StatStorage[];
+    remainingStats: StatStorage[];
+}
 
-export function computeStat(stats: StatStorage[], registration: StatRegistration<any>): Decimal {
+export function computeStat(
+    forModel: ModelName,
+    stats: StatStorage[],
+    registration: StatRegistration<any, any>
+): StatComputation {
 
-    const coalesced = coalesceStats(stats, registration);
+    const bk = `${forModel}-base` as const;
+    const tk = forModel;
+    const baseModelStats = stats.filter(s => s.scope == bk);
+    const totalModelStats = stats.filter(s => s.scope == tk);
+    const appliedStats = [...baseModelStats, ...totalModelStats];
+    const remainingStats = stats.filter(s => s.scope != tk && s.scope != bk);
 
-    let result = new Decimal(0);
-    if (coalesced.base) {
-        result = result.add(coalesced.base);
-    }
 
-    const tiers = keysOf(coalesced).filter(k => k.startsWith('percentTier')).map(k => parseInt(k.slice(11)));
-    for (const tier of tiers) {
-        const p = coalesced[`percentTier${tier}`]!.div(100).add(1);
-        result = result.mul(p);
-    }
+    const baseCoalesced = coalesceStats(baseModelStats, registration);
+    const totalCoalesced = coalesceStats(totalModelStats, registration);
 
-    if (coalesced.percentCompounding) {
-        result = result.mul(coalesced.percentCompounding.div(100).add(1));
-    }
+    let val = computeStatValue(new Decimal(0), baseCoalesced);
+    val = computeStatValue(val, totalCoalesced);
+
+    const d = (val: Decimal | undefined) => val ?? new Decimal(0);
+
+    const max = d(registration.max);
 
     // apply the max cap.
     result = caps[registration.capType](result, coalesced.max, coalesced.softcapScale);
@@ -73,6 +87,28 @@ export function computeStat(stats: StatStorage[], registration: StatRegistration
     const min = coalesced.min ?? new Decimal(-Infinity);
     if (result.lt(min)) {
         result = min;
+    }
+
+    return result;
+}
+
+function computeStatValue(
+    initial: Decimal,
+    stats: StatCoalesced,
+): Decimal {
+    let result = initial;
+    if (stats.base) {
+        result = result.add(stats.base);
+    }
+
+    const tiers = keysOf(stats).filter(k => k.startsWith('percentTier')).map(k => parseInt(k.slice(11)));
+    for (const tier of tiers) {
+        const p = stats[`percentTier${tier}`]!.div(100).add(1);
+        result = result.mul(p);
+    }
+
+    if (stats.percentCompounding) {
+        result = result.mul(stats.percentCompounding.div(100).add(1));
     }
 
     return result;

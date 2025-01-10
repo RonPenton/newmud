@@ -8,11 +8,10 @@ type StatsFor<M extends ModelName> = {
 };
 
 export type StatCollectionComputed<M extends ModelName> = {
-    readonly [K in keyof StatsFor<M>]: Decimal;
+    readonly [K in keyof StatsFor<M>]: Decimal & {
+        explain: string;
+    };
 }
-
-type C = StatCollectionComputed<'actor'>;
-type D = StatCollectionComputed<'item'>;
 
 export type StatCollectionStorage = {
     readonly [K in StatName]?: StatStorage[];

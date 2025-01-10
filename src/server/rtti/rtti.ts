@@ -46,7 +46,7 @@ export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     ModelLogic<any> &
     OwnedCollection<any> &
     IsStatCollectionStorage & 
-    IsStatComputation
+    IsStatComputation<any>
 >;
 
 export type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
@@ -62,7 +62,7 @@ export type IsObject = { object: ObjectDescriptor; }
 export type IsProperties = { properties: true; }
 export type OwnedCollection<T extends ModelName> = { ownedCollection: T; }
 export type IsStatCollectionStorage = { statCollectionStorage: true; }
-export type IsStatComputation = { statComputation: true; }
+export type IsStatComputation<T extends ModelName> = { statComputation: T; }
 
 export type LogicStorage = {
     name: string;
@@ -259,10 +259,10 @@ export const RTTI = {
         } as const;
     },
 
-    statComputation: () => {
+    statComputation: <T extends ModelName>(modelName: T) => {
         return {
             storageDescriptor: (): never => { throw new Error('not implemented') },
-            proxyDescriptor: (): StatCollectionComputed => { throw new Error('not implemented') },
+            proxyDescriptor: (): StatCollectionComputed<T> => { throw new Error('not implemented') },
             statComputation: true,
             isReadOnly: true
         } as const;
