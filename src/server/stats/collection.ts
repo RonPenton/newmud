@@ -1,12 +1,18 @@
-//import Decimal from "decimal.js";
-import { StatName } from "./Stats";
+import Decimal from "decimal.js";
+import { ModelName } from "../models/ModelNames";
+import { StatName, Stats } from "./Stats";
 import { RegardingStats, StatStorage } from "./types";
 
-// export type StatCollectionComputed = {
-//     readonly [K in StatName]: Decimal & {
-//         collect(regarding: RegardingStats): StatStorage[]
-//     };
-// }
+type StatsFor<M extends ModelName> = {
+    [K in keyof Stats as M extends Stats[K]['models'][number] ? K : never]: Stats[K];
+};
+
+export type StatCollectionComputed<M extends ModelName> = {
+    readonly [K in keyof StatsFor<M>]: Decimal;
+}
+
+type C = StatCollectionComputed<'actor'>;
+type D = StatCollectionComputed<'item'>;
 
 export type StatCollectionStorage = {
     readonly [K in StatName]?: StatStorage[];

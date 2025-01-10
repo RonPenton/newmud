@@ -2,11 +2,11 @@ import Decimal from "decimal.js";
 import { registerStat } from "../Stats";
 
 const registration = registerStat({
-    name: 'hitpoints',
-    description: 'The amount of damage a character can take before dying',
+    name: 'weight',
+    description: 'The weight of an object',
     min: new Decimal(0),
-    capType: 'hard',
-    models: ['actor'],
+    capType: 'none',
+    models: ['item', 'actor'],
     rounding: val => val.floor()
 });
 

@@ -7,6 +7,7 @@ const registration = registerStat({
     max: new Decimal(100),
     min: new Decimal(0),
     capType: 'log2',
+    models: ['actor'],
     rounding: val => val.floor()
 });
 

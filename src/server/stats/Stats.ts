@@ -1,43 +1,43 @@
 import Decimal from "decimal.js";
 import { CapType } from "./softcap";
 import fs from 'fs';
+import { ModelName } from "../models/ModelNames";
 
-export interface StatRegistrations {
+export interface StatRegistrations { }
 
-}
-
-export type StatRegistration<N extends string> = {
-    name: N;
-    description: string;
-    max?: Decimal;
-    min?: Decimal;
-    softcapScale?: Decimal;
-    capType: CapType;
-    rounding?: (val: Decimal) => Decimal;
+export type StatRegistration<N extends string, M extends ModelName> = {
+    readonly name: N;
+    readonly description: string;
+    readonly max?: Decimal;
+    readonly min?: Decimal;
+    readonly softcapScale?: Decimal;
+    readonly capType: CapType;
+    readonly models: M[]
+    readonly rounding?: (val: Decimal) => Decimal;
 }
 
 export type Stats = {
-    [K in keyof StatRegistrations as StatRegistrations[K] extends StatRegistration<any> ? K : never]: StatRegistration<K>;
-}
+    [K in keyof StatRegistrations]: StatRegistrations[K] extends StatRegistration<K, any> ? StatRegistrations[K] : never;
+};
 
 export type StatName = keyof Stats;
 
-export type InferStat<T extends StatRegistration<any>> = {
+export type InferStat<T extends StatRegistration<any, any>> = {
     [K in T['name']]: T;
 };
 
-const statRegistrations: Record<string, StatRegistration<any>> = {};
+const statRegistrations: Record<string, StatRegistration<any, any>> = {};
 
-export function registerStat<N extends string>(
-    registration: StatRegistration<N>
+export function registerStat<N extends string, M extends ModelName>(
+    registration: StatRegistration<N, M>
 ) {
     statRegistrations[registration.name] = registration;
     return registration;
 }
 
-export function getStatRegistration(name: string): StatRegistration<any> {
+export function getStatRegistration(name: string): StatRegistration<any, any> {
     const val = statRegistrations[name];
-    if(!val) {
+    if (!val) {
         throw new Error(`Stat '${name}' not found`);
     }
     return val;
