@@ -7,8 +7,7 @@
 // export function getStatComputationProxy<M extends ModelName>(
 //     type: M,
 //     obj: ModelProxy<M>
-// ): StatCollectionComputed {
-
+// ): StatCollectionComputed<M> {
 
 //     const collector = statCollectors[type];
 //     if (!collector) {

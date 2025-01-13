@@ -15,7 +15,6 @@ import { FullTypeDescriptor, isObject, isOwnedBy, isOwnedCollection, isStatColle
 import { ModelName } from '../models/ModelNames';
 import { getLogicProxy } from './logicProxy';
 import { getStatStorageProxy } from './statStorageProxy';
-import { getStatComputationProxy } from './statComputationProxy';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -37,11 +36,6 @@ export function getProxyObject<T extends ModelName>(
     Object.values(setProperties).forEach(def => verifyOwnedSet(type, def));
     const dbSets = recordMap(setProperties, def => {
         return new DbSet(def.ownedCollection, type, obj, universe.proxies);
-    });
-
-    const statProperties = recordFilter(typeDef.object, isStatCollectionStorage);
-    const statProxies = recordMap(statProperties, (_def, key) => {
-        getStatStorageProxy(obj[key as keyof typeof obj] as any);
     });
 
     // add a "linker" function to the global set of linkers that will be executed once
@@ -226,9 +220,9 @@ export function getProxyObject<T extends ModelName>(
             if(def && def.statCollectionStorage) {
                 return statProxies[key as keyof typeof statProxies];
             }
-            if(def && def.statComputation) {
-                return statComputer;
-            }
+            // if(def && def.statComputation) {
+            //     return statComputer;
+            // }
 
             const val: any = Reflect.get(target, key, receiver);
 
@@ -254,7 +248,13 @@ export function getProxyObject<T extends ModelName>(
     });
 
     const logic = getLogicProxy(type, universe, obj, proxy);
-    const statComputer = getStatComputationProxy(type, proxy);
+    // const statComputer = getStatComputationProxy(type, proxy);
+
+    const statProperties = recordFilter(typeDef.object, isStatCollectionStorage);
+    const statProxies = recordMap(statProperties, (_def, key) => {
+        return getStatStorageProxy(type, proxy, obj[key as keyof typeof obj] as any, key);
+    });
+
 
     return proxy;
 }

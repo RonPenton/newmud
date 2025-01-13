@@ -263,7 +263,7 @@ export const RTTI = {
         return {
             storageDescriptor: (): never => { throw new Error('not implemented') },
             proxyDescriptor: (): StatCollectionComputed<T> => { throw new Error('not implemented') },
-            statComputation: true,
+            statComputation: modelName,
             isReadOnly: true
         } as const;
     }

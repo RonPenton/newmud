@@ -4,10 +4,16 @@ import { getStatRegistration, loadStatDefinitions, StatRegistration } from "../s
 import { coalesceStats, computeStat, condenseStats, StatCoalesced, StatStorage } from "../src/server/stats/types";
 import { StatCollectionStorage } from "../src/server/stats/collection";
 import { getStatStorageProxy } from "../src/server/proxy/statStorageProxy";
+import { loadModelFiles } from "../src/server/models";
+import { getUniverseStorage } from "./fixtures/db1";
+import { UniverseManager } from "../src/server/universe/universe";
+import { loadLogicDefinitions } from "../src/server/extensibleLogic/load";
 
 describe('test', () => {
 
     beforeAll(async () => {
+        await loadModelFiles();
+        await loadLogicDefinitions();
         await loadStatDefinitions();
     });
 
@@ -43,204 +49,235 @@ describe('test', () => {
 
     test('coalesce stats add', () => {
         const stats: StatStorage[] = [
-            { type: 'base', value: new Decimal(10) },
-            { type: 'max', value: new Decimal(100) },
-            { type: 'base', value: new Decimal(2) }
+            { type: 'value', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(2), appliesAt: 'base', scope: 'actor' }
         ];
-        const reg = getStatRegistration('hitpoints')!;
-        const coalesced = coalesceStats(stats, reg);
-        expect(coalesced.base && coalesced.base.eq(12)).toBe(true);
-        expect(coalesced.max && coalesced.max.eq(100)).toBe(true);
+        const coalesced = coalesceStats(stats);
+        expect(coalesced.value && coalesced.value.eq(12)).toBe(true);
     });
 
     test('coalesce stats complex', () => {
         const stats: StatStorage[] = [
-            { type: 'base', value: new Decimal(10) },
-            { type: 'max', value: new Decimal(20) },
-            { type: 'min', value: new Decimal(0) },
-            { type: 'percentTier0', value: new Decimal(10) },
-            { type: 'percentTier0', value: new Decimal(3) },
-            { type: 'percentTier1', value: new Decimal(5) },
-            { type: 'base', value: new Decimal(5) },
-            { type: 'percentTier1', value: new Decimal(1) },
-            { type: 'base', value: new Decimal(1) },
-            { type: 'percentCompounding', value: new Decimal(10) },
-            { type: 'percentCompounding', value: new Decimal(5) },
-            { type: 'percentCompounding', value: new Decimal(1) },
-            { type: 'max', value: new Decimal(20) }
+            { type: 'value', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(3), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
         ];
-        const reg = getStatRegistration('hitpoints')!;
-        const coalesced = coalesceStats(stats, reg);
+        const coalesced = coalesceStats(stats);
 
-        expect(coalesced.base && coalesced.base.eq(16)).toBe(true);
-        expect(coalesced.percentTier0 && coalesced.percentTier0.eq(13)).toBe(true);
-        expect(coalesced.percentTier1 && coalesced.percentTier1.eq(6)).toBe(true);
-        expect(coalesced.percentCompounding && coalesced.percentCompounding.eq(16.655)).toBe(true);
-        expect(coalesced.max && coalesced.max.eq(40)).toBe(true);
-        expect(coalesced.min && coalesced.min.eq(0)).toBe(true);
+        expect(coalesced.value && coalesced.value.eq(16)).toBe(true);
+        expect(coalesced.percent0 && coalesced.percent0.eq(13)).toBe(true);
+        expect(coalesced.percent1 && coalesced.percent1.eq(6)).toBe(true);
+        expect(coalesced.percentX && coalesced.percentX.eq(16.655)).toBe(true);
     });
 
     test('compute stat', () => {
         const stats: StatStorage[] = [
-            { type: 'base', value: new Decimal(10) },
-            { type: 'max', value: new Decimal(20) },
-            { type: 'min', value: new Decimal(0) },
-            { type: 'percentTier0', value: new Decimal(10) },
-            { type: 'percentTier0', value: new Decimal(3) },
-            { type: 'percentTier1', value: new Decimal(5) },
-            { type: 'base', value: new Decimal(5) },
-            { type: 'percentTier1', value: new Decimal(1) },
-            { type: 'base', value: new Decimal(1) },
-            { type: 'percentCompounding', value: new Decimal(10) },
-            { type: 'percentCompounding', value: new Decimal(5) },
-            { type: 'percentCompounding', value: new Decimal(1) },
-            { type: 'max', value: new Decimal(20) }
+            { type: 'value', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(3), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
         ];
 
-        const reg = getStatRegistration('hitpoints')!;
-        const computed = computeStat(stats, reg);
+        const computed = computeStat(stats);
         expect(computed.eq('22.35669744')).toBe(true);
     });
 
     test('condense stats basic', () => {
         const stats: StatStorage[] = [
-            { type: 'base', value: new Decimal(10) },
-            { type: 'max', value: new Decimal(20) },
-            { type: 'min', value: new Decimal(0) },
-            { type: 'percentTier0', value: new Decimal(10) },
-            { type: 'percentTier0', value: new Decimal(3) },
-            { type: 'percentTier1', value: new Decimal(5) },
-            { type: 'base', value: new Decimal(5) },
-            { type: 'percentTier1', value: new Decimal(1) },
-            { type: 'base', value: new Decimal(1) },
-            { type: 'percentCompounding', value: new Decimal(10) },
-            { type: 'percentCompounding', value: new Decimal(5) },
-            { type: 'percentCompounding', value: new Decimal(1) },
-            { type: 'max', value: new Decimal(20) }
+            { type: 'value', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(3), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
         ];
 
         const condensed = condenseStats(stats);
-        expect(condensed.length).toBe(8);
+        expect(condensed.length).toBe(6);
         expect(condensed).toStrictEqual([
-            { type: 'base', value: new Decimal(16) },
-            { type: 'max', value: new Decimal(40) },
-            { type: 'min', value: new Decimal(0) },
-            { type: 'percentTier0', value: new Decimal(13) },
-            { type: 'percentTier1', value: new Decimal(6) },
-            { type: 'percentCompounding', value: new Decimal(10) },
-            { type: 'percentCompounding', value: new Decimal(5) },
-            { type: 'percentCompounding', value: new Decimal(1) }
+            { type: 'value', value: new Decimal(16), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(13), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(6), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(1), appliesAt: 'base', scope: 'actor' }
         ]);
     });
 
     test('condense stats with explanations', () => {
         const stats: StatStorage[] = [
-            { type: 'base', value: new Decimal(10) },
-            { type: 'max', value: new Decimal(20) },
-            { type: 'min', value: new Decimal(0) },
-            { type: 'percentTier0', value: new Decimal(10), explain: 'bonus from enchantment' },
-            { type: 'percentTier0', value: new Decimal(3) },
-            { type: 'percentTier1', value: new Decimal(5) },
-            { type: 'base', value: new Decimal(5) },
-            { type: 'percentTier1', value: new Decimal(1) },
-            { type: 'base', value: new Decimal(1) },
-            { type: 'base', value: new Decimal(-2), explain: 'cursed by a warlock for stealing his bread' },
-            { type: 'percentCompounding', value: new Decimal(10) },
-            { type: 'percentCompounding', value: new Decimal(5) },
-            { type: 'percentCompounding', value: new Decimal(1) },
-            { type: 'max', value: new Decimal(20) }
+            { type: 'value', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(10), explain: 'bonus from enchantment', appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(3), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(-2), explain: 'cursed by a warlock for stealing his bread', appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(1), appliesAt: 'base', scope: 'actor' },
         ];
 
         const condensed = condenseStats(stats);
-        expect(condensed.length).toBe(10);
+        expect(condensed.length).toBe(8);
         expect(condensed).toStrictEqual([
-            { type: 'base', value: new Decimal(16) },
-            { type: 'max', value: new Decimal(40) },
-            { type: 'min', value: new Decimal(0) },
-            { type: 'percentTier0', value: new Decimal(10), explain: 'bonus from enchantment' },
-            { type: 'percentTier0', value: new Decimal(3) },
-            { type: 'percentTier1', value: new Decimal(6) },
-            { type: 'base', value: new Decimal(-2), explain: 'cursed by a warlock for stealing his bread' },
-            { type: 'percentCompounding', value: new Decimal(10) },
-            { type: 'percentCompounding', value: new Decimal(5) },
-            { type: 'percentCompounding', value: new Decimal(1) }
+            { type: 'value', value: new Decimal(16), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(10), explain: 'bonus from enchantment', appliesAt: 'base', scope: 'actor' },
+            { type: 'percent0', value: new Decimal(3), appliesAt: 'base', scope: 'actor' },
+            { type: 'percent1', value: new Decimal(6), appliesAt: 'base', scope: 'actor' },
+            { type: 'value', value: new Decimal(-2), explain: 'cursed by a warlock for stealing his bread', appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(10), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(5), appliesAt: 'base', scope: 'actor' },
+            { type: 'percentX', value: new Decimal(1), appliesAt: 'base', scope: 'actor' }
         ]);
     });
 
 
     test('stat proxy gets empty stats', () => {
-        const stats: StatCollectionStorage = {};
-        const proxy = getStatStorageProxy(stats);
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {};
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
 
-        expect(proxy.hitpoints).toBeDefined();
-        const vals = [...proxy.hitpoints];
+        const proxy = getStatStorageProxy('actor', actor, storage.actor[0].baseStats, 'baseStats');
+
+        expect(proxy.maxHitpoints).toBeDefined();
+        const vals = [...proxy.maxHitpoints.raw()];
         expect(vals.length).toBe(0);
         expect(vals).toStrictEqual([]);
 
         // make sure no changes were made to the original object
-        expect(stats).toStrictEqual({});
+        expect(storage.actor[0].baseStats).toStrictEqual({});
     });
 
     test('stat proxy gets existing stats', () => {
-        const stats: StatCollectionStorage = {
-            hitpoints: [{ type: 'base', value: new Decimal(10) }]
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {
+            maxHitpoints: [{ type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }]
         };
-        const proxy = getStatStorageProxy(stats);
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
 
-        expect(proxy.hitpoints).toBeDefined();
-        expect([...proxy.hitpoints]).toStrictEqual([{ type: 'base', value: new Decimal(10) }]);
+        const proxy = getStatStorageProxy('actor', actor, storage.actor[0].baseStats, 'baseStats');
+
+        expect(proxy.maxHitpoints).toBeDefined();
+        expect([...proxy.maxHitpoints.raw()]).toStrictEqual([
+            { type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }
+        ]);
 
         // make sure no changes were made to the original object
-        expect(stats).toStrictEqual({
-            hitpoints: [{ type: 'base', value: new Decimal(10) }]
+        expect(storage.actor[0].baseStats).toStrictEqual({
+            maxHitpoints: [{ type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }]
         });
     });
 
     test('stat proxy sets new stat', () => {
-        const stats: StatCollectionStorage = {};
-        const proxy = getStatStorageProxy(stats);
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {};
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
 
-        proxy.hitpoints.add({ type: 'base', value: new Decimal(10) });
+        const proxy = getStatStorageProxy('actor', actor, storage.actor[0].baseStats, 'baseStats');
 
-        expect([...proxy.hitpoints]).toStrictEqual([{ type: 'base', value: new Decimal(10) }]);
-        expect(stats).toStrictEqual({
-            hitpoints: [{ type: 'base', value: new Decimal(10) }]
+        proxy.maxHitpoints.add({ type: 'value', appliesAt: 'base', scope: 'actor', value: new Decimal(10) });
+
+        expect([...proxy.maxHitpoints.raw()]).toStrictEqual([
+            { type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }
+        ]);
+        expect(storage.actor[0].baseStats).toStrictEqual({
+            maxHitpoints: [{ type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }]
         });
     });
 
     test('stat proxy sets existing stat', () => {
-        const stats: StatCollectionStorage = {
-            hitpoints: [{ type: 'base', value: new Decimal(10) }]
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {
+            maxHitpoints: [{ type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }]
         };
-        const proxy = getStatStorageProxy(stats);
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
 
-        proxy.hitpoints.add({ type: 'base', value: new Decimal(5) });
-        proxy.hitpoints.add({ type: 'max', value: new Decimal(30) });
+        const proxy = getStatStorageProxy('actor', actor, storage.actor[0].baseStats, 'baseStats');
 
-        expect([...proxy.hitpoints]).toStrictEqual([
-            { type: 'base', value: new Decimal(15) },
-            { type: 'max', value: new Decimal(30) }
+        proxy.maxHitpoints.add({ type: 'value', value: new Decimal(5), scope: 'actor', appliesAt: 'base' });
+
+        expect([...proxy.maxHitpoints.raw()]).toStrictEqual([
+            { type: 'value', value: new Decimal(15), scope: 'actor', appliesAt: 'base' },
         ]);
-        expect(stats).toStrictEqual({
-            hitpoints: [
-                { type: 'base', value: new Decimal(15) },
-                { type: 'max', value: new Decimal(30) }
+        expect(storage.actor[0].baseStats).toStrictEqual({
+            maxHitpoints: [
+                { type: 'value', value: new Decimal(15), scope: 'actor', appliesAt: 'base' },
             ]
         });
 
-        proxy.hitpoints.add({ type: 'base', value: new Decimal(15), explain: 'permanent buff for Blerbens Day!' });
-        expect([...proxy.hitpoints]).toStrictEqual([
-            { type: 'base', value: new Decimal(15) },
-            { type: 'max', value: new Decimal(30) },
-            { type: 'base', value: new Decimal(15), explain: 'permanent buff for Blerbens Day!' }
+        proxy.maxHitpoints.add(
+            { type: 'value', value: new Decimal(15), explain: 'permanent buff for Blerbens Day!', scope: 'actor', appliesAt: 'base' }
+        );
+        expect([...proxy.maxHitpoints.raw()]).toStrictEqual([
+            { type: 'value', value: new Decimal(15), scope: 'actor', appliesAt: 'base' },
+            { type: 'value', value: new Decimal(15), explain: 'permanent buff for Blerbens Day!', scope: 'actor', appliesAt: 'base' }
         ]);
-        expect(stats).toStrictEqual({
-            hitpoints: [
-                { type: 'base', value: new Decimal(15) },
-                { type: 'max', value: new Decimal(30) },
-                { type: 'base', value: new Decimal(15), explain: 'permanent buff for Blerbens Day!' }
+        expect(storage.actor[0].baseStats).toStrictEqual({
+            maxHitpoints: [
+                { type: 'value', value: new Decimal(15), scope: 'actor', appliesAt: 'base' },
+                { type: 'value', value: new Decimal(15), explain: 'permanent buff for Blerbens Day!', scope: 'actor', appliesAt: 'base' }
             ]
         });
     });
 
+    test('basic stat collection on entity', () => {
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {
+            maxHitpoints: [{ type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }]
+        };
+
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
+
+        const result = [...actor.baseStats.maxHitpoints.collect()];
+        expect(result).toStrictEqual([
+            { type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }
+        ]);
+    });
+
+    test('adding stat collection on entity', () => {
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {
+            maxHitpoints: [{ type: 'value', value: new Decimal(10), scope: 'actor', appliesAt: 'base' }]
+        };
+
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
+
+        actor.baseStats.maxHitpoints.add({ type: 'value', value: new Decimal(5), scope: 'actor', appliesAt: 'base' });
+
+        const result = [...actor.baseStats.maxHitpoints.collect()];
+        expect(result).toStrictEqual([
+            { type: 'value', value: new Decimal(15), scope: 'actor', appliesAt: 'base' }
+        ]);
+    });
 });

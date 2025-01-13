@@ -3,6 +3,7 @@ import { CapType } from "./softcap";
 import fs from 'fs';
 import { ModelName } from "../models/ModelNames";
 import { ModelProxy } from "../models";
+import { capitalize } from "../utils/capitalize";
 
 export interface StatRegistrations { }
 
@@ -39,9 +40,9 @@ export function registerStat<N extends string, M extends ModelName>(
 
 export function registerStatMax<N extends string, M extends ModelName>(
     registration: StatRegistration<N, M>
-): StatRegistration<`max${N}`, M> {
+): StatRegistration<`max${Capitalize<N>}`, M> {
     return registerStat({
-        name: `max${registration.name}`,
+        name: `max${capitalize(registration.name)}`,
         description: `The maximum value of ${registration.name}`,
         capType: 'hard',
         models: registration.models,

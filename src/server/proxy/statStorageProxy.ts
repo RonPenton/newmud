@@ -1,13 +1,20 @@
 //import Decimal from 'decimal.js';
 import { StatCollectionProxy, StatCollectionStorage } from '../stats/collection';
 import DeepProxy from 'proxy-deep';
-import { condenseStats, StatStorage } from '../stats/types';
+import { condenseStats, RegardingStats, StatStorage } from '../stats/types';
+import { ModelName } from '../models/ModelNames';
+import { ModelProxy } from '../models';
+import { StatName } from '../stats/Stats';
+import { statCollectors } from '../stats/collectors';
 
 export function getStatStorageProxy(
-    obj: StatCollectionStorage
+    model: ModelName,
+    obj: ModelProxy<ModelName>,
+    stats: StatCollectionStorage,
+    collectionName: string
 ): StatCollectionProxy {
 
-    const proxy = new DeepProxy<StatCollectionProxy>(obj as any, {
+    const proxy = new DeepProxy<StatCollectionProxy>(stats as any, {
 
         get(target, key, receiver) {
             if (this.path.length == 0) {
@@ -18,18 +25,27 @@ export function getStatStorageProxy(
                 return this.nest(val);
             }
             else if (this.path.length == 1) {
-                if(key === Symbol.iterator) {
-                    const val = Reflect.get(this.rootTarget, this.path[0]) ?? [];
-                    return function*() {
-                        for(const k of val) {
-                            yield k;
-                        }
+                if (key === 'raw') {
+                    return (filter?: ModelName) => {
+                        const filterFn = (a: StatStorage) => filter ? a.scope == filter : true;
+                        const collection = Reflect.get(this.rootTarget, this.path[0]) as StatStorage[] ?? [];
+                        return collection.filter(filterFn);
                     }
                 }
-                else if(key === 'add') {
+                else if (key === 'add') {
                     return (stat: StatStorage) => {
                         const val = Reflect.get(this.rootTarget, this.path[0]) ?? [];
                         Reflect.set(this.rootTarget, this.path[0], condenseStats([...val, stat]));
+                    }
+                }
+                else if (key === 'collect') {
+                    return (): Iterable<StatStorage> => {
+                        const regarding: RegardingStats = { [model]: {
+                            record: obj,
+                            collection: collectionName
+                        } };
+                        const collector = statCollectors[model];
+                        return collector(obj as any, regarding, this.path[0] as StatName);
                     }
                 }
             }

@@ -2,9 +2,9 @@ import Decimal from "decimal.js";
 import { registerStat } from "../Stats";
 
 const registration = registerStat({
-    name: 'hitpoints',
+    name: 'maxHitpoints',
     description: 'The amount of damage a character can take before dying',
-    min: new Decimal(0),
+    startingMin: new Decimal(0),
     capType: 'hard',
     models: ['actor'],
     rounding: val => val.floor()

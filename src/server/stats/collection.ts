@@ -17,9 +17,16 @@ export type StatCollectionStorage = {
     readonly [K in StatName]?: StatStorage[];
 }
 
-export type BaseStat = Iterable<StatStorage> & {
+export type StatsCollected = {
+    value: Decimal;
+    all: StatStorage[];
+    remaining: StatStorage[];
+}
+
+export type BaseStat = {
     add(stat: StatStorage): void;
-    collect(regarding: RegardingStats): StatStorage[];
+    collect(): Iterable<StatStorage>;
+    raw(filter?: ModelName): Iterable<StatStorage>;
 }
 
 export type StatCollectionProxy = {

@@ -51,8 +51,7 @@ export function getUniverseStorage(): UniverseStorage {
                 name: 'Sword!',
                 actor: 1,
                 room: null,
-                cost: new Decimal(10),
-                itemTemplate: 0,
+                itemTemplate: 1,
                 logic: [],
                 baseStats: {},
                 equippedStats: {}
@@ -62,8 +61,7 @@ export function getUniverseStorage(): UniverseStorage {
                 name: 'Shield!',
                 actor: 2,
                 room: null,
-                cost: new Decimal(5),
-                itemTemplate: 0,
+                itemTemplate: 1,
                 logic: [],
                 baseStats: {},
                 equippedStats: {}
@@ -152,6 +150,12 @@ export function getUniverseStorage(): UniverseStorage {
             logic: [],
             baseStats: {}
         }],
-        itemTemplate: []
+        itemTemplate: [{
+            id: 1,
+            name: 'sword',
+            logic: [],
+            baseStats: {},
+            equippedStats: {}
+        }]
     };
 }
