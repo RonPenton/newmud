@@ -15,6 +15,7 @@ import { FullTypeDescriptor, isObject, isOwnedBy, isOwnedCollection, isStatColle
 import { ModelName } from '../models/ModelNames';
 import { getLogicProxy } from './logicProxy';
 import { getStatStorageProxy } from './statStorageProxy';
+import { getStatComputationProxy } from './statComputationProxy';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -141,7 +142,7 @@ export function getProxyObject<T extends ModelName>(
             }
 
             const onChange = modelRegistrations[type].onChanges[key as string];
-            if(onChange) {
+            if (onChange) {
                 value = onChange(proxy, value);
             }
 
@@ -213,24 +214,24 @@ export function getProxyObject<T extends ModelName>(
                 return dbSets[key as ModelPlural];
             }
 
-            if(def && def.modelLogic) {
+            if (def && def.modelLogic) {
                 return logic;
             }
 
-            if(def && def.statCollectionStorage) {
+            if (def && def.statCollectionStorage) {
                 return statProxies[key as keyof typeof statProxies];
             }
-            // if(def && def.statComputation) {
-            //     return statComputer;
-            // }
+            if(def && def.statComputation) {
+                return statComputer;
+            }
 
             const val: any = Reflect.get(target, key, receiver);
 
             if (def && def.modelPointerName !== undefined) {
                 const ref = universe.proxies[def.modelPointerName as ModelName].get(val);
-                if(ref) { return ref };
-                if(def.isOptional) { return undefined; }
-                if(def.isNullable) { return null; }
+                if (ref) { return ref };
+                if (def.isOptional) { return undefined; }
+                if (def.isNullable) { return null; }
                 throw new Error(`Could not find ${def.modelPointerName}[${val}]`);
             }
 
@@ -248,13 +249,17 @@ export function getProxyObject<T extends ModelName>(
     });
 
     const logic = getLogicProxy(type, universe, obj, proxy);
-    // const statComputer = getStatComputationProxy(type, proxy);
+    const statComputer = getStatComputationProxy(type, proxy);
 
     const statProperties = recordFilter(typeDef.object, isStatCollectionStorage);
     const statProxies = recordMap(statProperties, (_def, key) => {
-        return getStatStorageProxy(type, proxy, obj[key as keyof typeof obj] as any, key);
+        return getStatStorageProxy(
+            type,
+            proxy,
+            obj[key as keyof typeof obj] as any,
+            key as any
+        );
     });
-
 
     return proxy;
 }

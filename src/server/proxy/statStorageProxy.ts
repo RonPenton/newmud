@@ -1,17 +1,16 @@
-//import Decimal from 'decimal.js';
 import { StatCollectionProxy, StatCollectionStorage } from '../stats/collection';
 import DeepProxy from 'proxy-deep';
-import { condenseStats, RegardingStats, StatStorage } from '../stats/types';
+import { condenseStats, StatModels, StatStorage } from '../stats/types';
 import { ModelName } from '../models/ModelNames';
 import { ModelProxy } from '../models';
 import { StatName } from '../stats/Stats';
 import { statCollectors } from '../stats/collectors';
 
-export function getStatStorageProxy(
-    model: ModelName,
-    obj: ModelProxy<ModelName>,
+export function getStatStorageProxy<M extends ModelName>(
+    type: M,
+    record: ModelProxy<M>,
     stats: StatCollectionStorage,
-    collectionName: string
+    collection: keyof StatModels[M]
 ): StatCollectionProxy {
 
     const proxy = new DeepProxy<StatCollectionProxy>(stats as any, {
@@ -40,12 +39,8 @@ export function getStatStorageProxy(
                 }
                 else if (key === 'collect') {
                     return (): Iterable<StatStorage> => {
-                        const regarding: RegardingStats = { [model]: {
-                            record: obj,
-                            collection: collectionName
-                        } };
-                        const collector = statCollectors[model];
-                        return collector(obj as any, regarding, this.path[0] as StatName);
+                        const collector = statCollectors[type];
+                        return collector({ type, record, collection }, this.path[0] as StatName);
                     }
                 }
             }

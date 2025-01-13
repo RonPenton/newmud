@@ -3,8 +3,8 @@ import Decimal from "decimal.js";
 export type CapType = 'none' | 'hard' | 'log2';
 
 export const caps = {
-    log2: (value, max, scale) => {
-        if(!max || !scale) {
+    log2: (value, max, scale = new Decimal(0.1)) => {
+        if(!max) {
             // effectively no cap if no max is defined.
             return value;
         }

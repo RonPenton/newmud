@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { ModelName } from "../models/ModelNames";
 import { StatName, Stats } from "./Stats";
-import { RegardingStats, StatStorage } from "./types";
+import { StatStorage } from "./types";
 
 type StatsFor<M extends ModelName> = {
     [K in keyof Stats as M extends Stats[K]['models'][number] ? K : never]: Stats[K];
@@ -20,6 +20,7 @@ export type StatCollectionStorage = {
 export type StatsCollected = {
     value: Decimal;
     all: StatStorage[];
+    applied: StatStorage[];
     remaining: StatStorage[];
 }
 

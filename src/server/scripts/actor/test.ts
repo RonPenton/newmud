@@ -2,8 +2,8 @@ import Decimal from "decimal.js";
 import { makeScript } from "../../extensibleLogic/types";
 
 const script = makeScript('actor', {
-    collectStats: ({ stat, regarding: { actor } }, b) => {
-        if (actor && stat === 'maxHitpoints') {
+    collectStats: ({ stat, regarding: { type } }, b) => {
+        if (type == 'actor' && stat === 'maxHitpoints') {
             return [...b, {
                 type: 'value',
                 value: new Decimal(10),

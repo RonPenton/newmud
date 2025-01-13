@@ -4,7 +4,7 @@ import { registerStat } from "../Stats";
 const registration = registerStat({
     name: 'weight',
     description: 'The weight of an object',
-    startingMin: new Decimal(0),
+    min: new Decimal(0),
     capType: 'none',
     models: ['item', 'actor'],
     rounding: val => val.floor()

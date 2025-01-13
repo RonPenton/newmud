@@ -3,8 +3,6 @@ import { groupBy, keysOf } from "tsc-utils";
 import { ModelProxy, ModelRegistrations } from "../models";
 import { identity, IsObject, IsStatCollectionStorage, ObjectDescriptor } from "../rtti";
 import { ModelName } from "../models/ModelNames";
-import { StatName } from "./Stats";
-import { statCollectors } from "./collectors";
 import { StatsCollected } from "./collection";
 
 export type Tier = number | 'X';
@@ -64,12 +62,16 @@ export function computeStatPhased(
     const grouped = groupBy(stats, classifier);
 
     let value = initialValue;
-    value = computeStat(grouped.get('base') ?? [], value);
-    value = computeStat(grouped.get('total') ?? [], value);
+
+    const base = grouped.get('base') ?? [];
+    const total = grouped.get('total') ?? [];
+    value = computeStat(base, value);
+    value = computeStat(total, value);
 
     return {
         value,
         all: stats,
+        applied: [...base, ...total],
         remaining: grouped.get('other') ?? []
     };
 }
@@ -117,7 +119,7 @@ export function condenseStats(stats: StatStorage[]): StatStorage[] {
             condensed.push(val);
         }
         else {
-            const existing = condensed.find(s => s.type == val.type && !s.explain);
+            const existing = condensed.find(s => s.type == val.type && !s.explain && s.scope == val.scope && s.appliesAt == val.appliesAt);
             if (existing) {
                 existing.value = existing.value.add(val.value);
             }
@@ -150,16 +152,20 @@ type S<T extends ObjectDescriptor> = RemoveNever<{
  * Type to extract all models that have a stat collection storage property, along
  * with the properties themselves so that we can look up the property names.
  */
-type StatModels = RemoveEmpty<{
+export type StatModels = RemoveEmpty<{
     [K in ModelName]: D<K> extends IsObject ? S<D<K>['object']> : never
 }>;
+
+
+export type RegardingStat<M extends ModelName> = {
+    type: M,
+    record: ModelProxy<M>,
+    collection: keyof StatModels[M]
+};
 
 /**
  * A type that allows us to narrow in on a specific model and collection of stats. 
  */
 export type RegardingStats = {
-    [K in keyof StatModels]?: {
-        record: ModelProxy<K>;
-        collection: keyof StatModels[K];
-    }
-}
+    [K in ModelName]: RegardingStat<K>
+}[ModelName]

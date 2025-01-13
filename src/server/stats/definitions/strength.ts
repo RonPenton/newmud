@@ -2,8 +2,8 @@ import Decimal from "decimal.js";
 import { registerStat } from "../Stats";
 
 const registration = registerStat({
-    name: 'maxHitpoints',
-    description: 'The amount of damage a character can take before dying',
+    name: 'strength',
+    description: 'Your physical strength',
     min: new Decimal(0),
     startingValue: new Decimal(0),
     capType: 'hard',

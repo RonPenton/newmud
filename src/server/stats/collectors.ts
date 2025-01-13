@@ -1,15 +1,15 @@
 import Decimal from "decimal.js";
-import { ModelProxy } from "../models";
 import { ModelName } from "../models/ModelNames";
 import { StatName } from "./Stats";
-import { computeStatPhased, RegardingStats, StatStorage } from "./types";
+import { computeStatPhased, RegardingStat, StatStorage } from "./types";
 
 type StatCollectors = {
-    [K in ModelName]: (model: ModelProxy<K>, regarding: RegardingStats, stat: StatName) => Iterable<StatStorage>;
+    [K in ModelName]: (regarding: RegardingStat<K>, stat: StatName) => Iterable<StatStorage>;
 }
 
 export const statCollectors: StatCollectors = {
-    'actor': (actor, regarding, stat) => {
+    'actor': (regarding, stat) => {
+        const { record: actor } = regarding;
         const itemStats = actor.items.flatMap(item => {
             const base = item.baseStats[stat].collect();
             // todo: if equipped, add equipped stats
@@ -18,8 +18,8 @@ export const statCollectors: StatCollectors = {
             // }
             const equipped: StatStorage[] = [];
 
-            const { value, all, remaining } = computeStatPhased('item', new Decimal(0), [...base, ...equipped]);
-            const s: StatStorage[] =  all.length == 0 ? [] : [{
+            const { value, applied, remaining } = computeStatPhased('item', new Decimal(0), [...base, ...equipped]);
+            const s: StatStorage[] = applied.length == 0 ? [] : [{
                 type: 'value',
                 value,
                 scope: 'actor',
@@ -47,8 +47,8 @@ export const statCollectors: StatCollectors = {
             ...actor.room.logic.collectStats({ stat, regarding }),
         ];
     },
-    'item': (item, regarding, stat) => {
-        const collection = regarding.item?.collection ?? 'baseStats';
+    'item': (regarding, stat) => {
+        const { record: item, collection } = regarding;
         const room = item.room ?? item.actor?.room;
         if (!room) throw new Error('Item must be in a room to collect stats');
         return [
@@ -66,14 +66,15 @@ export const statCollectors: StatCollectors = {
             ...room.logic.collectStats({ stat, regarding }),
         ]
     },
-    'itemTemplate': (itemTemplate, regarding, stat) => {
-        const collection = regarding.item?.collection ?? regarding.itemTemplate?.collection ?? 'baseStats';
+    'itemTemplate': (regarding, stat) => {
+        const { record: itemTemplate, collection } = regarding;
         return [
             ...itemTemplate[collection][stat].raw(),
             ...itemTemplate.logic.collectStats({ stat, regarding }),
         ]
     },
-    'room': (room, regarding, stat) => {
+    'room': (regarding, stat) => {
+        const { record: room } = regarding;
         return [
             ...room.area.region.world.baseStats[stat].raw(),
             ...room.area.region.world.logic.collectStats({ stat, regarding }),
@@ -85,7 +86,8 @@ export const statCollectors: StatCollectors = {
             ...room.logic.collectStats({ stat, regarding }),
         ]
     },
-    'area': (area, regarding, stat) => {
+    'area': (regarding, stat) => {
+        const { record: area } = regarding;
         return [
             ...area.region.world.baseStats[stat].raw(),
             ...area.region.world.logic.collectStats({ stat, regarding }),
@@ -95,7 +97,8 @@ export const statCollectors: StatCollectors = {
             ...area.logic.collectStats({ stat, regarding }),
         ]
     },
-    'region': (region, regarding, stat) => {
+    'region': (regarding, stat) => {
+        const { record: region } = regarding;
         return [
             ...region.world.baseStats[stat].raw(),
             ...region.world.logic.collectStats({ stat, regarding }),
@@ -103,7 +106,8 @@ export const statCollectors: StatCollectors = {
             ...region.logic.collectStats({ stat, regarding }),
         ]
     },
-    'world': (world, regarding, stat) => {
+    'world': (regarding, stat) => {
+        const { record: world } = regarding;
         return [
             ...world.baseStats[stat].raw(),
             ...world.logic.collectStats({ stat, regarding }),
