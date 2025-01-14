@@ -631,8 +631,39 @@ describe('test', () => {
         expect(actor.stats.weight.eq(122)).toBe(true);
     });
 
+    test('stat computation - strength', () => {
+        const storage = getUniverseStorage();
+        storage.actor[0].baseStats = {
+            strength: [
+                { type: 'value', value: new Decimal(100), scope: 'actor', appliesAt: 'base' }
+            ]
+        };
+        storage.item[0].room = 1;
+        storage.item[0].actor = null;
+        storage.item[0].baseStats = {
+            strength: [
+                { type: 'value', value: new Decimal(10), scope: 'item', appliesAt: 'base' },
+                { type: 'percent0', value: new Decimal(20), scope: 'actor', appliesAt: 'total' }
+            ]
+        }
 
+        const manager = new UniverseManager(storage);
+        const actor = manager.getRecord('actor', 1)!;
+        expect(actor).not.toBeUndefined();
 
+        const item = manager.getRecord('item', 1)!;
+        expect(item).not.toBeUndefined();
 
+        expect(actor.stats.strength.eq(100)).toBe(true);
+
+        item.actor = actor;
+        expect(actor.stats.strength.eq(132)).toBe(true);
+
+        actor.room.baseStats.strength.add({ type: 'value', value: new Decimal(10), scope: 'item', appliesAt: 'base' });
+        expect(actor.stats.strength.eq(144)).toBe(true);
+
+        actor.room.area.baseStats.strength.add({ type: 'percent0', value: new Decimal(13), scope: 'item', appliesAt: 'base' });
+        expect(actor.stats.strength.eq(147)).toBe(true);
+    });
 
 });
