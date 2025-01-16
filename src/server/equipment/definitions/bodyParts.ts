@@ -1,3 +1,4 @@
+import { InferRegistrationBatch } from "../../utils/infer";
 import { registerBodyPart } from "../bodyParts";
 
 const registrations = {
@@ -11,4 +12,4 @@ const registrations = {
     }),
 } as const;
 
-declare module "../bodyParts" { interface BodyParts extends InferBodyParts<typeof registrations> { } }
+declare module "../bodyParts" { interface BodyParts extends InferRegistrationBatch<typeof registrations> { } }

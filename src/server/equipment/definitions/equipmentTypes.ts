@@ -1,3 +1,4 @@
+import { InferRegistrationBatch } from "../../utils/infer";
 import { registerEquipmentType } from "../equipmentTypes";
 
 const registrations = {
@@ -13,4 +14,4 @@ const registrations = {
     }),
 };
 
-declare module "../equipmentTypes" { interface EquipmentTypes extends InferEquipmentTypes<typeof registrations> { } }
+declare module "../equipmentTypes" { interface EquipmentTypes extends InferRegistrationBatch<typeof registrations> { } }
