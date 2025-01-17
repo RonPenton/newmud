@@ -1,6 +1,8 @@
 import { RTTI } from "../../rtti";
+import { getTemplateProperties } from "../../rtti/templates";
 import { registerModel } from "../Models";
 import { defaultProperties } from "./default";
+import { raceRegistration } from "./race";
 
 /**
  * A collection of properties free-form properties
@@ -27,7 +29,9 @@ export const actorRegistration = registerModel({
             })
         }),
         properties: RTTI.properties<ActorProperties>(),
-        items: RTTI.ownedCollection('item')
+        items: RTTI.ownedCollection('item'),
+        race: RTTI.templatedFrom('race'),
+        ...getTemplateProperties(raceRegistration)
     }),
     onChanges: {}
 });

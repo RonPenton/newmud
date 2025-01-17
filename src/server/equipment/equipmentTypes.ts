@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import { Registration } from '../utils/infer';
 import { BodyPart } from './bodyParts';
 
@@ -16,4 +17,13 @@ export function registerEquipmentType<N extends string>(
 ) {
     equipmentTypeRegistrations[registration.name] = registration;
     return registration;
+}
+
+/**
+ * A slot that accepts equipped items on an actor.
+ */
+export type EquipmentSlot = {
+    bodyPart: BodyPart;
+    equipmentSize?: Decimal;
+    linkedSlots?: BodyPart[];
 }

@@ -3,6 +3,7 @@ import { actorRegistration } from "./definitions/actor";
 import { areaRegistration } from "./definitions/area";
 import { itemRegistration } from "./definitions/item";
 import { itemTemplateRegistration } from "./definitions/itemTemplate";
+import { raceRegistration } from "./definitions/race";
 import { regionRegistration } from "./definitions/region";
 import { roomRegistration } from "./definitions/room";
 import { worldRegistration } from "./definitions/world";
@@ -17,6 +18,7 @@ export interface ModelRegistrations extends Record<ModelName, ModelRegistration<
     world: typeof worldRegistration;
     region: typeof regionRegistration;
     area: typeof areaRegistration;
+    race: typeof raceRegistration;
 }
 
 export type ModelDescriptors = {

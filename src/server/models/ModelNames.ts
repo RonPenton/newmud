@@ -7,7 +7,8 @@ export const modelNames = [
     'item',
     'world',
     'region',
-    'area'
+    'area',
+    'race'
 ] as const;
 
 export type ModelName = typeof modelNames[number];
