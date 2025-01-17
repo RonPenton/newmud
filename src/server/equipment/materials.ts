@@ -5,6 +5,8 @@ export interface Materials { }
 export type MaterialRegistration<N extends string> = Registration<N> & {
 }
 
+export type MaterialRegistrationBatch = Record<string, Omit<MaterialRegistration<any>, 'name'>>;
+
 export type MaterialType = keyof Materials;
 
 export type MaterialRegistrationAugmented<N extends string> = MaterialRegistration<N> & {
@@ -22,11 +24,27 @@ export function registerMaterialType<N extends string>(
     return registration;
 }
 
-export function augmentRegistration<N extends string>(
-    registration: MaterialRegistration<N>,
-    augment: MaterialAugmentation<N>
+export function registerMaterialBatch<T extends MaterialRegistrationBatch>(
+    registrations: T
 ) {
-    const augmented = { ...registration, ...augment };
-    materialRegistrations[registration.name] = augmented;
-    return augmented;
+    for (const name in registrations) {
+        materialRegistrations[name] = { name, ...registrations[name] };
+    }
+    return registrations;
+};
+
+export type InferMaterialBatch<T extends MaterialRegistrationBatch> = {
+    [K in keyof T]: T[K] & { name: K };
+}
+
+export type MaterialAugmentationBatch = {
+    [K in MaterialType]?: MaterialAugmentation<K>;
+}
+
+export function augmentMaterialBatch<T extends Partial<Record<MaterialType, MaterialAugmentation<any>>>>(
+    augmentations: T
+) {
+    Object.entries(augmentations).forEach(([name, augment]) => {
+        materialRegistrations[name] = { ...materialRegistrations[name], ...augment };
+    });
 }
