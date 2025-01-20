@@ -1,5 +1,6 @@
 import { ProxyType, StorageType } from "../rtti";
 import { actorRegistration } from "./definitions/actor";
+import { actorTemplateRegistration } from "./definitions/actorTemplate";
 import { areaRegistration } from "./definitions/area";
 import { itemRegistration } from "./definitions/item";
 import { itemTemplateRegistration } from "./definitions/itemTemplate";
@@ -13,6 +14,7 @@ import { ModelRegistration, modelRegistrations } from "./Models";
 export interface ModelRegistrations extends Record<ModelName, ModelRegistration<any, any, any>> {
     room: typeof roomRegistration;
     actor: typeof actorRegistration;
+    actorTemplate: typeof actorTemplateRegistration;
     itemTemplate: typeof itemTemplateRegistration;
     item: typeof itemRegistration;
     world: typeof worldRegistration;
@@ -27,7 +29,11 @@ export type ModelDescriptors = {
 
 export type ModelStorage<T extends ModelName> = StorageType<ModelDescriptors[T]>;
 
-export type ModelProxy<T extends ModelName> = ProxyType<ModelDescriptors[T]>;
+export const Storage = Symbol();
+
+export type ModelProxy<T extends ModelName> = ProxyType<ModelDescriptors[T]> & {
+    [Storage]: ModelStorage<T>;
+};
 
 export type ModelPlural = ModelRegistrations[ModelName]['plural'];
 

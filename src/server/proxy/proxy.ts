@@ -11,11 +11,20 @@ import {
 import { recordFilter, recordMap } from 'tsc-utils';
 import { DbSet, InternalAdd, InternalDelete } from '../db/dbset';
 import Decimal from 'decimal.js';
-import { FullTypeDescriptor, isObject, isOwnedBy, isOwnedCollection, isStatCollectionStorage, isTwoWayLink, OwnedCollection } from '../rtti';
+import { 
+    FullTypeDescriptor, 
+    isObject, 
+    isOwnedBy, 
+    isOwnedCollection, 
+    isStatCollectionStorage, 
+    isTwoWayLink, 
+    OwnedCollection 
+} from '../rtti';
 import { ModelName } from '../models/ModelNames';
 import { getLogicProxy } from './logicProxy';
 import { getStatStorageProxy } from './statStorageProxy';
 import { getStatComputationProxy } from './statComputationProxy';
+import { Storage } from '../models';
 
 export function getProxyObject<T extends ModelName>(
     type: T,
@@ -207,6 +216,11 @@ export function getProxyObject<T extends ModelName>(
         },
 
         get(target, key, receiver) {
+
+            if(this.path.length == 0 && key === Storage) {
+                return obj;
+            }
+
             const path = [...this.path, key];
 
             const def = getTypedef(typeDef, path);

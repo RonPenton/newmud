@@ -23,6 +23,13 @@ export type requiredKeys<T extends Record<string, TypeDescriptor<any, any>>> = {
     [k in keyof T]: T[k] extends Optional ? never : StorageType<T[k]> extends never ? never : k;
 }[keyof T];
 
+type AnyOptional = Optional | OptionalStorage;
+
+export type optionalKeysStorage<T extends object> = { [k in keyof T]: T[k] extends AnyOptional ? k : never; }[keyof T];
+export type requiredKeysStorage<T extends Record<string, TypeDescriptor<any, any>>> = {
+    [k in keyof T]: T[k] extends AnyOptional ? never : StorageType<T[k]> extends never ? never : k;
+}[keyof T];
+
 export type optionalReadOnlyKeys<T extends object> = {
     [k in keyof T]: T[k] extends ReadOnly ? T[k] extends Optional ? k : never : never;
 }[keyof T];
@@ -38,6 +45,7 @@ export type requiredMutableKeys<T extends object> = {
 
 export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
     Optional &
+    OptionalStorage &
     Nullable &
     ReadOnly &
     ModelPointer<any> &
@@ -53,6 +61,7 @@ export type FullTypeDescriptor<T, U> = TypeDescriptor<T, U> & Partial<
 export type ObjectDescriptor = Record<string, FullTypeDescriptor<any, any>>;
 
 export type Optional = { isOptional: true; }
+export type OptionalStorage = { isOptionalStorage: true }
 export type Nullable = { isNullable: true; }
 export type ReadOnly = { isReadOnly: true; }
 export type ModelPointer<T extends ModelName> = { modelPointerName: T; }
@@ -104,9 +113,9 @@ type proxyLeaf<D extends TypeDescriptor<any, any>> = ProxyType<D>;
 
 type inferStorageObject<T extends ObjectDescriptor> = flatten<
     {
-        [K in requiredKeys<T>]: storageLeaf<T[K]>;
+        [K in requiredKeysStorage<T>]: storageLeaf<T[K]>;
     } & {
-        [K in optionalKeys<T>]?: storageLeaf<T[K]>;
+        [K in optionalKeysStorage<T>]?: storageLeaf<T[K]>;
     }
 >;
 
@@ -220,6 +229,13 @@ export const RTTI = {
             ...descriptor,
             isOptional: true,
         } as const;
+    },
+
+    optionalStorage: <T extends TD>(descriptor: T) => {
+        return {
+            ...descriptor,
+            isOptionalStorage: true,
+        } as const
     },
 
     nullable: <T extends TD>(descriptor: T) => {

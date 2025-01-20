@@ -2,6 +2,7 @@ import { typeArrayValidator } from "../utils/typeArrayValidator";
 
 export const modelNames = [
     'actor',
+    'actorTemplate',
     'room',
     'itemTemplate',
     'item',

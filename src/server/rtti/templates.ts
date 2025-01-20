@@ -1,14 +1,14 @@
-import { recordFilter } from "tsc-utils";
-import { ModelProxy, ModelRegistration, ModelRegistrations } from "../models";
-import { flatten, ModelPointer, ObjectDescriptor, optionalKeys, requiredKeys, Template, TemplatedFrom } from "./rtti";
+import { recordFilter, recordMap } from "tsc-utils";
+import { ModelProxy, ModelRegistration, ModelRegistrations, ModelStorage } from "../models";
+import { flatten, ModelPointer, ObjectDescriptor, optionalKeys, OptionalStorage, requiredKeys, RTTI, Template, TemplatedFrom } from "./rtti";
 import { ModelName } from "../models/ModelNames";
 
 export function isTemplate(obj: any): obj is Template {
-    return obj && typeof obj ==='object' && obj.isTemplate === true;
+    return obj && typeof obj === 'object' && obj.isTemplate === true;
 }
 
 export type TemplateProperties<T extends ObjectDescriptor> = {
-    [K in keyof T as T[K] extends Template ? K : never]: T[K];
+    [K in keyof T as T[K] extends Template ? K : never]: T[K] & OptionalStorage;
 }
 
 type ModelTemplate<M extends ModelName> = TemplatedFrom & ModelPointer<M>;
@@ -24,20 +24,8 @@ export type TemplateParents<M extends ModelName> = Parents<ModelRegistrations[M]
 export function getTemplateProperties<T extends ModelRegistration<any, any, any>>(
     registration: T
 ): TemplateProperties<T['descriptor']['object']> {
-    return recordFilter(registration.descriptor.object, isTemplate) as any;
+    return recordMap(
+        recordFilter(registration.descriptor.object, isTemplate),
+        x => RTTI.optionalStorage(x as any)
+    ) as any;
 }
-
-type A = TemplateParents<'actor'>;
-type B = ModelProxy<'race'>;
-
-export function createModelFromTemplate<M extends ModelName>(
-    template: TemplateParents<M>,
-    model: ModelRegistration<any, M, any>
-): ModelRegistration<any, M, any> {
-    const descriptor = { ...model.descriptor.object, ...template };
-    return {
-        ...model,
-        descriptor,
-    };
-}
-)
